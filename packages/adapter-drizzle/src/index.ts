@@ -7,10 +7,17 @@ import type {
   AdminSchema,
   AdminField
 } from '@blackwaves/admingen-types';
+import { introspectSchema } from './introspect';
 
 export function createDrizzleAdapter(options: {
-  config: AdminConfig;
+  schema: Record<string, any>;
+  config?: Partial<AdminConfig>; // Allow optional override/extension in future
 }): AdapterResult {
+
+  // INTROSPECTION STEP:
+  // Automatically generate the AdminConfig from the raw Drizzle schema
+  const autoConfig = introspectSchema(options.schema);
+  const config = autoConfig; // In future we can merge with options.config
 
   const schemaJson: AdminSchema = { resources: [] };
 
@@ -18,13 +25,12 @@ export function createDrizzleAdapter(options: {
   // so the main 'handlers' object can look it up dynamically.
   const handlerMap: Record<string, any> = {};
 
-  // Loop over the USER CONFIG (not the database schema)
-  for (const resourceConfig of options.config.resources) {
+  // Loop over the GENERATED CONFIG
+  for (const resourceConfig of config.resources) {
     const resourceSlug = resourceConfig.slug;
     const table = resourceConfig.table;
 
     // 1. Build Schema for UI
-    // The UI just needs to know what fields to render
     schemaJson.resources.push({
       name: resourceSlug,
       label: resourceConfig.label || resourceSlug,
@@ -32,19 +38,12 @@ export function createDrizzleAdapter(options: {
     });
 
     // 2. Prepare Relationship Logic
-    // We need two maps:
-    // 'withRelations': Tells Drizzle which relations to JOIN (fetch)
-    // 'foreignKeyMap': Tells the Create handler how to map UI names to DB columns
     const withRelations: Record<string, boolean> = {};
     const foreignKeyMap: Record<string, string> = {};
 
     for (const field of resourceConfig.fields) {
       if (field.type === 'relationship') {
-        // Tell Drizzle to fetch this relation (e.g., "author": true)
-        // This assumes the field name in config matches the relation name in Drizzle
         withRelations[field.name] = true;
-
-        // Map UI name -> DB Column (e.g., "author" -> "authorId")
         if (field.foreignKey) {
           foreignKeyMap[field.name] = field.foreignKey;
         }
@@ -56,10 +55,11 @@ export function createDrizzleAdapter(options: {
 
       // FIND MANY
       findMany: async ({ db }: { db: any }) => {
+        // Drizzle query builder needs the *property name* in the schema object (e.g. `db.query.users`)
+        // introspection sets `slug` to this key.
         if (!db.query[resourceSlug]) {
           throw new Error(`Drizzle query not found for '${resourceSlug}'. Did you pass the schema to drizzle()?`);
         }
-        // "Smart" fetch: automatically joins relations defined in config
         return db.query[resourceSlug].findMany({
           with: Object.keys(withRelations).length > 0 ? withRelations : undefined
         });
@@ -67,13 +67,19 @@ export function createDrizzleAdapter(options: {
 
       // FIND ONE
       findOne: async ({ db, params }: { db: any, params: { id: any } }) => {
-        // We assume standard auto-increment ID for now
         const id = Number(params.id);
+        const pkField = resourceConfig.fields.find(f => f.isId);
+        // Fallback to 'id' if not detected, though introspection tries to find it.
+        // We need the ACTUAL table column object for `eq()`.
+        // `table` is the Drizzle table object.
+        const pkColumn = table[pkField?.name || 'id'];
 
-        // Use 'eq' on the table's primary key (assumed to be 'id')
-        // We can make this more robust later by inspecting the PK
+        if (!pkColumn) {
+          throw new Error(`Primary key column not found for ${resourceSlug}`);
+        }
+
         return db.query[resourceSlug].findFirst({
-          where: eq(table.id, id),
+          where: eq(pkColumn, id),
           with: Object.keys(withRelations).length > 0 ? withRelations : undefined
         });
       },
@@ -81,16 +87,18 @@ export function createDrizzleAdapter(options: {
       // CREATE
       create: async ({ db, body }: { db: any, body: any }) => {
         const data = { ...body };
-
-        // MAP RELATIONSHIPS: 
-        // The UI sends { "author": 1 }
-        // The Database needs { "authorId": 1 }
+        // Clean up data for insertion (map relations)
         for (const [fieldName, dbColumn] of Object.entries(foreignKeyMap)) {
           if (data[fieldName] !== undefined) {
-            data[dbColumn] = data[fieldName]; // Move value to DB column key
-            delete data[fieldName]; // Remove the relation object key
+            // For a relationship, we expect an ID or an object with ID
+            // If we implement Relation Field nicely, it sends the ID.
+            data[dbColumn] = data[fieldName];
+            delete data[fieldName];
           }
         }
+
+        // Remove fields that are not columns (like relationship fields that didn't match FKs)
+        // ... (Skipping robust cleanup for now, reliance on Drizzle to ignore or error)
 
         const res = await db.insert(table).values(data).returning();
         return res[0];
@@ -100,8 +108,9 @@ export function createDrizzleAdapter(options: {
       update: async ({ db, params, body }: { db: any, params: { id: any }, body: any }) => {
         const id = Number(params.id);
         const data = { ...body };
+        const pkField = resourceConfig.fields.find(f => f.isId);
+        const pkColumn = table[pkField?.name || 'id'];
 
-        // MAP RELATIONSHIPS:
         for (const [fieldName, dbColumn] of Object.entries(foreignKeyMap)) {
           if (data[fieldName] !== undefined) {
             data[dbColumn] = data[fieldName];
@@ -111,7 +120,7 @@ export function createDrizzleAdapter(options: {
 
         const res = await db.update(table)
           .set(data)
-          .where(eq(table.id, id))
+          .where(eq(pkColumn, id))
           .returning();
 
         return res[0];
@@ -120,8 +129,11 @@ export function createDrizzleAdapter(options: {
       // DELETE
       delete: async ({ db, params }: { db: any, params: { id: any } }) => {
         const id = Number(params.id);
+        const pkField = resourceConfig.fields.find(f => f.isId);
+        const pkColumn = table[pkField?.name || 'id'];
+
         const res = await db.delete(table)
-          .where(eq(table.id, id))
+          .where(eq(pkColumn, id))
           .returning();
 
         return res[0];
@@ -130,8 +142,6 @@ export function createDrizzleAdapter(options: {
   }
 
   // 4. Create the Routing Proxy
-  // This object is what the AdminGen plugin actually calls.
-  // It looks up the correct handler from handlerMap based on the URL resource.
   const handlers: AdminHandlers = {
     findMany: (resource) => (ctx: any) => {
       if (!handlerMap[resource]) throw new Error(`Resource ${resource} not found`);
