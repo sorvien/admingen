@@ -1,22 +1,48 @@
 import { Elysia } from 'elysia';
 import { staticPlugin } from '@elysiajs/static';
-import type { AdapterResult } from '@blackwaves/admingen-types';
+import type { AdapterResult, AuthProvider } from '@blackwaves/admingen-types';
 import { join } from 'path';
 
 export interface AdminGenOptions {
-  adapterResult: AdapterResult;
-  adminPath?: string;
-  beforeHandle?: (context: any) => any;
+    adapterResult: AdapterResult;
+    adminPath?: string;
+    beforeHandle?: (context: any) => any;
+    authProvider?: AuthProvider;
 }
 
-export const AdminGen = ({ 
-    adapterResult, 
-    adminPath = '/admin', 
-    beforeHandle
+export const AdminGen = ({
+    adapterResult,
+    adminPath = '/admin',
+    beforeHandle,
+    authProvider
 }: AdminGenOptions) => {
 
     const uiAssetsPath = join(import.meta.dirname, '..', '..', 'ui-assets');
     const app = new Elysia({ prefix: adminPath });
+
+    // --- AUTHENTICATION ---
+    // 1. Expose Auth State API
+    app.get('/api/_auth/me', async (ctx) => {
+        if (!authProvider) return { user: null };
+        const user = await authProvider.authenticate(ctx);
+        return { user };
+    });
+
+    // 2. Protect API Routes if Provider exists
+    if (authProvider) {
+        app.onBeforeHandle(async (ctx) => {
+            // Allow checking auth state without auth
+            if (ctx.path.endsWith('/api/_auth/me')) return;
+
+            // Protect all API routes under this prefix
+            if (ctx.path.includes('/api/') && !ctx.path.includes('/_auth/')) {
+                const user = await authProvider.authenticate(ctx);
+                if (!user) {
+                    return new Response('Unauthorized', { status: 401 });
+                }
+            }
+        });
+    }
 
     if (beforeHandle) {
         app.onBeforeHandle((ctx) => beforeHandle(ctx));
@@ -45,7 +71,7 @@ export const AdminGen = ({
         staticPlugin({
             assets: uiAssetsPath,
             prefix: '/', // Still serve everything under adminPath/
-            indexHTML: false, 
+            indexHTML: false,
             alwaysStatic: true,
         })
     );

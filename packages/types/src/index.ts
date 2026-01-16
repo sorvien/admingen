@@ -34,14 +34,29 @@ export interface AdminSchema {
 }
 
 export interface AdminHandlers {
-    findMany: (resource: string) => any;
-    findOne: (resource: string) => any;
-    create: (resource: string) => any;
-    update: (resource: string) => any;
-    delete: (resource: string) => any;
+  findMany: (resource: string) => any;
+  findOne: (resource: string) => any;
+  create: (resource: string) => any;
+  update: (resource: string) => any;
+  delete: (resource: string) => any;
 }
 
 export interface AdapterResult {
-    schemaJson: AdminSchema;
-    handlers: AdminHandlers;
+  schemaJson: AdminSchema;
+  handlers: AdminHandlers;
+}
+
+// --- Auth Types ---
+export interface AuthUser {
+  id: string | number;
+  name?: string;
+  email?: string;
+  avatar?: string;
+}
+
+export interface AuthProvider {
+  // Return the user if logged in, or null
+  authenticate: (context: any) => Promise<AuthUser | null>;
+  // Optional: Return a custom login page HTML or boolean to use default
+  loginUrl?: string;
 }

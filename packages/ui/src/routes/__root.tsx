@@ -1,8 +1,9 @@
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Link, Outlet, useNavigate, useLocation } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import type { AdminSchema } from '@blackwaves/admingen-types'
 import { Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../hooks/useAuth'
 
 const fetchAdminSchema = async (): Promise<AdminSchema> => {
   const res = await fetch('/admin/api/_schema')
@@ -18,6 +19,27 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { user, isLoading: authLoading } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user && location.pathname !== '/login') {
+      navigate({ to: '/login' })
+    }
+  }, [user, authLoading, navigate, location])
+
+  // Show nothing or loading state while checking auth
+  if (authLoading) return <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">Loading...</div>
+
+  // Allow rendering if on login page (even if no user)
+  if (!user && location.pathname === '/login') {
+    return <Outlet />
+  }
+
+  // If not on login page and no user (should rely on useEffect redirect, but safe guard)
+  if (!user) return null
 
   const {
     data: schema,
