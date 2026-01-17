@@ -94,10 +94,11 @@ export function createDrizzleAdapter(options: {
         // Clean up data for insertion (map relations)
         for (const [fieldName, dbColumn] of Object.entries(foreignKeyMap)) {
           if (data[fieldName] !== undefined) {
-            // For a relationship, we expect an ID or an object with ID
-            // If we implement Relation Field nicely, it sends the ID.
-            data[dbColumn] = data[fieldName];
-            delete data[fieldName];
+            // Only remap if the names are different
+            if (fieldName !== dbColumn) {
+              data[dbColumn] = data[fieldName];
+              delete data[fieldName];
+            }
           }
         }
 
@@ -115,10 +116,14 @@ export function createDrizzleAdapter(options: {
         const pkField = resourceConfig.fields.find(f => f.isId);
         const pkColumn = table[pkField?.name || 'id'];
 
+        // Clean up data for insertion (map relations)
         for (const [fieldName, dbColumn] of Object.entries(foreignKeyMap)) {
           if (data[fieldName] !== undefined) {
-            data[dbColumn] = data[fieldName];
-            delete data[fieldName];
+            // Only remap if the names are different to avoid deleting the value we just set
+            if (fieldName !== dbColumn) {
+              data[dbColumn] = data[fieldName];
+              delete data[fieldName];
+            }
           }
         }
 
@@ -168,6 +173,19 @@ export function createDrizzleAdapter(options: {
       return handlerMap[resource].delete(ctx);
     },
   };
+
+
+
+  // DEBUG: Log the generated schema for verification
+  console.log('--- Generated Admin Schema ---');
+  schemaJson.resources.forEach(r => {
+    console.log(`Resource: ${r.name}`);
+    r.fields.forEach(f => {
+      if (f.type === 'relationship') {
+        console.log(`  - Field: ${f.name} (type: ${f.type}, relationTo: ${f.relationTo})`);
+      }
+    });
+  });
 
   return { schemaJson, handlers };
 }
