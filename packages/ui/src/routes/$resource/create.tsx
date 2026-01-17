@@ -206,7 +206,7 @@ function CreateComponent() {
               return (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor={fieldApi.name} className="capitalize">
-                    {field.label}
+                    {field.label} <span className="text-xs text-gray-500">({field.type} -&gt; {field.relationTo})</span>
                   </Label>
                   {field.type === 'textarea' ? (
                      <textarea

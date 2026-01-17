@@ -18,6 +18,10 @@ export const AdminGen = ({
 }: AdminGenOptions) => {
 
     const uiAssetsPath = join(import.meta.dirname, '..', '..', 'ui-assets');
+    console.log('--- AdminGen Debug ---');
+    console.log('Running from:', import.meta.dirname);
+    console.log('Resolved uiAssetsPath:', uiAssetsPath);
+    // console.log('Checking existence of index.html:', await Bun.file(join(uiAssetsPath, 'index.html')).exists());
     const app = new Elysia({ prefix: adminPath });
 
     // --- AUTHENTICATION ---
@@ -62,10 +66,22 @@ export const AdminGen = ({
     }
 
     // 2. STATIC ASSETS
+    // 2. STATIC ASSETS
+    // Manual handler for assets to ensure they are found and have correct mime type
+    app.get('/assets/*', async ({ path, set }) => {
+        const filePath = join(uiAssetsPath, path);
+        const file = Bun.file(filePath);
+        if (await file.exists()) {
+            // Bun auto-sets content-type usually, but we can be explicit if needed
+            return file;
+        }
+        return new Response('Asset not found', { status: 404 });
+    });
+
     app.use(
         staticPlugin({
             assets: uiAssetsPath,
-            prefix: '/', // Still serve everything under adminPath/
+            prefix: '', // Serve at root relative to app (so /admin/assets -> assets/)
             indexHTML: false,
             alwaysStatic: true,
         })

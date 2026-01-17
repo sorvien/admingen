@@ -117,6 +117,7 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                                     // Fallback to table name
                                     field.relationTo = getTableName(conf.referencedTable);
                                 }
+                                console.log(`   > Set relationTo: ${field.relationTo}`);
                                 field.foreignKey = fieldName; // Store property name
                                 field.relationName = relName; // Store the relation name (e.g. 'author') for Drizzle queries
                             } else {
