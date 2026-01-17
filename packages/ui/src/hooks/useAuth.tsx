@@ -16,7 +16,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/admin/api/_auth/me');
+      // Ensure cookies are sent
+      const res = await fetch('/admin/api/_auth/me', {
+          credentials: 'include' // <--- Key fix
+      });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);

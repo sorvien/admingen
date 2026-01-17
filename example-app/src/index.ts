@@ -15,11 +15,27 @@ const db = drizzle(sqlite, { schema: { posts, teams, users, postsRelations, user
 // --- DUMMY AUTH PROVIDER ---
 const dummyAuthProvider = {
   authenticate: async (ctx: any) => {
-    // Simple check: looking for a header or cookie?
-    const cookie = ctx.cookie?.auth;
-    if (cookie?.value === 'secret_token') {
+    // Debug logging for request details
+    const method = ctx.request?.method || 'UNKNOWN_METHOD';
+    const url = ctx.request?.url || 'UNKNOWN_URL';
+    console.log(`--- [Debug] AuthProvider [${method} ${url}] ---`);
+
+    // Inspect headers and cookies
+    if (!ctx.headers) console.log('⚠️ Headers are UNDEFINED');
+    if (!ctx.cookie) console.log('⚠️ Cookie proxy is UNDEFINED');
+
+    if (ctx.cookie && ctx.cookie.auth) {
+      console.log('Auth Cookie Value:', ctx.cookie.auth.value);
+    }
+
+    // Try multiple ways to get the token
+    const token = ctx.cookie?.auth?.value || ctx.cookie?.auth;
+
+    if (token === 'secret_token') {
+      console.log('✅ Auth success');
       return { id: 1, name: 'Admin User', email: 'admin@example.com' };
     }
+    console.log('❌ Auth failed. Token found:', token);
     return null;
   }
 };

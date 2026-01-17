@@ -6,7 +6,9 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
 const fetchAdminSchema = async (): Promise<AdminSchema> => {
-  const res = await fetch('/admin/api/_schema')
+  const res = await fetch('/admin/api/_schema', {
+    credentials: 'include' 
+  })
   if (!res.ok) {
     throw new Error('Failed to fetch admin schema')
   }
@@ -22,6 +24,17 @@ function RootComponent() {
   const { user, isLoading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  const {
+    data: schema,
+    isLoading: schemaLoading,
+    error,
+  } = useQuery({
+    queryKey: ['adminSchema'],
+    queryFn: fetchAdminSchema,
+    // Don't fetch schema if not authenticated, to avoid 401s on schema endpoint
+    enabled: !!user 
+  })
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -41,17 +54,8 @@ function RootComponent() {
   // If not on login page and no user (should rely on useEffect redirect, but safe guard)
   if (!user) return null
 
-  const {
-    data: schema,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['adminSchema'],
-    queryFn: fetchAdminSchema,
-  })
-
   if (schema) console.log('UI successfully fetched schema:', schema)
-  if (isLoading) console.log('Loading schema...')
+  if (schemaLoading) console.log('Loading schema...')
   if (error) console.error('Schema fetch error:', error.message)
 
   return (
@@ -92,7 +96,7 @@ function RootComponent() {
           </div>
 
           <nav className="flex flex-col gap-2">
-            {isLoading && <div className="text-sm">Loading...</div>}
+            {schemaLoading && <div className="text-sm">Loading...</div>}
             {schema?.resources.map((resource) => (
               <Link
                 key={resource.name}

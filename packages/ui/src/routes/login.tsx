@@ -26,6 +26,7 @@ function LoginComponent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+        credentials: 'include' // <--- Key fix
       });
 
       if (res.ok) {

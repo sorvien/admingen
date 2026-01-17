@@ -28,30 +28,21 @@ export const AdminGen = ({
         return { user };
     });
 
-    // 2. Protect API Routes if Provider exists
-    if (authProvider) {
-        app.onBeforeHandle(async (ctx) => {
-            // Allow checking auth state without auth
-            if (ctx.path.endsWith('/api/_auth/me')) return;
+    // 1. API ROUTES (must come first)
+    app.group('/api', (api) => {
+        // Protect API Routes if Provider exists
+        if (authProvider) {
+            api.onBeforeHandle(async (ctx) => {
+                // Allow checking auth state without auth (though _auth/me is likely outside this group)
+                if (ctx.path.includes('/_auth/')) return;
 
-            // Protect all API routes under this prefix
-            if (ctx.path.includes('/api/') && !ctx.path.includes('/_auth/')) {
                 const user = await authProvider.authenticate(ctx);
                 if (!user) {
                     return new Response('Unauthorized', { status: 401 });
                 }
-            }
-        });
-    }
+            });
+        }
 
-    if (beforeHandle) {
-        app.onBeforeHandle((ctx) => beforeHandle(ctx));
-    }
-
-    // --- ROUTING ORDER ---
-
-    // 1. API ROUTES (must come first)
-    app.group('/api', (api) => {
         const { schemaJson, handlers } = adapterResult;
         api.get('/_schema', () => schemaJson);
 
@@ -65,6 +56,10 @@ export const AdminGen = ({
         }
         return api;
     });
+
+    if (beforeHandle) {
+        app.onBeforeHandle((ctx) => beforeHandle(ctx));
+    }
 
     // 2. STATIC ASSETS
     app.use(

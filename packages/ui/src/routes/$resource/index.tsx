@@ -54,13 +54,13 @@ const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
 
 // --- Data Fetching ---
 async function fetchAdminSchema(): Promise<AdminSchema> {
-  const res = await fetch('/admin/api/_schema')
+  const res = await fetch('/admin/api/_schema', { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch admin schema')
   return res.json()
 }
 
 async function fetchResourceData(resourceName: string) {
-  const res = await fetch(`/admin/api/${resourceName}`)
+  const res = await fetch(`/admin/api/${resourceName}`, { credentials: 'include' })
   if (!res.ok)
     throw new Error(`Failed to fetch resource data for ${resourceName}`)
   return res.json()
@@ -153,6 +153,7 @@ function ResourceListComponent() {
                   try {
                     const res = await fetch(`/admin/api/${resourceName}/${id}`, {
                       method: 'DELETE',
+                      credentials: 'include'
                     });
                     if (!res.ok) throw new Error('Failed to delete');
                     // Invalidate queries to refresh the list

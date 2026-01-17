@@ -18,13 +18,13 @@ import {
 
 // --- Data Fetching ---
 async function fetchAdminSchema(): Promise<AdminSchema> {
-  const res = await fetch('/admin/api/_schema')
+  const res = await fetch('/admin/api/_schema', { credentials: 'include' })
   if (!res.ok) throw new Error('Failed to fetch admin schema')
   return res.json()
 }
 
 async function fetchResourceItem(resourceName: string, id: string) {
-  const res = await fetch(`/admin/api/${resourceName}/${id}`)
+  const res = await fetch(`/admin/api/${resourceName}/${id}`, { credentials: 'include' })
   if (!res.ok) throw new Error(`Failed to fetch ${resourceName} item ${id}`)
   return res.json()
 }
@@ -50,7 +50,7 @@ function RelationshipField({
     queryKey: ['relatedResource', targetResource],
     queryFn: async () => {
       if (!targetResource) return []
-      const res = await fetch(`/admin/api/${targetResource}`)
+      const res = await fetch(`/admin/api/${targetResource}`, { credentials: 'include' })
       if (!res.ok) throw new Error(`Failed to fetch ${targetResource}`)
       return res.json()
     },
@@ -137,6 +137,7 @@ function EditComponent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newData),
+        credentials: 'include'
       })
       if (!res.ok) {
         const err = await res.text()
