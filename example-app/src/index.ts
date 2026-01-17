@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
 import { cors } from '@elysiajs/cors';
 // Import your tables specifically
-import { posts, users, postsRelations, usersRelations, teams } from './schema';
+import { posts, users, postsRelations, usersRelations, teams, teamsRelations } from './schema';
 
 import { AdminGen } from '@blackwaves/admingen';
 import { createDrizzleAdapter } from '@blackwaves/admingen-adapter-drizzle';
@@ -43,7 +43,7 @@ const dummyAuthProvider = {
 // --- THE CONFIGURATION ---
 const adapterResult = createDrizzleAdapter({
   // We pass the raw Drizzle schema objects here for introspection
-  schema: { posts, users, teams },
+  schema: { posts, users, teams, postsRelations, usersRelations, teamsRelations },
 });
 
 const app = new Elysia()

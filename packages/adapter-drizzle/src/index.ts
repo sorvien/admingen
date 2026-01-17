@@ -43,7 +43,11 @@ export function createDrizzleAdapter(options: {
 
     for (const field of resourceConfig.fields) {
       if (field.type === 'relationship') {
-        withRelations[field.name] = true;
+        // Use the proper relation name for Drizzle 'with' if available (e.g. 'author')
+        // Fallback to field name (e.g. 'authorId') is likely wrong for 'with', but safe to keep as default
+        const relName = field.relationName || field.name;
+        withRelations[relName] = true;
+
         if (field.foreignKey) {
           foreignKeyMap[field.name] = field.foreignKey;
         }

@@ -21,7 +21,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, isLoading: authLoading, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -78,6 +78,7 @@ function RootComponent() {
             fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out
             bg-linear-to-b from-[#0b0b0b] to-[#1a1a1a] text-white p-4
             lg:relative lg:translate-x-0 lg:z-auto
+            flex flex-col
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
@@ -111,6 +112,18 @@ function RootComponent() {
               </Link>
             ))}
           </nav>
+          
+          <div className="mt-auto pt-4 border-t border-gray-800">
+             <div className="px-3 py-2 text-sm text-gray-400 mb-2">
+                User: {user?.name || user?.email || 'Unknown'}
+             </div>
+             <button
+                onClick={() => logout()}
+                className="w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+          </div>
         </div>
 
         {/* Overlay for mobile */}

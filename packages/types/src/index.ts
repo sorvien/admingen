@@ -9,6 +9,7 @@ export interface AdminField {
   // For relationships
   relationTo?: string; // e.g. "users"
   foreignKey?: string; // e.g. "authorId"
+  relationName?: string; // e.g. "author" - used for Drizzle "with" queries
 }
 
 // 2. The Resource Definition
