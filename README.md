@@ -1,4 +1,4 @@
-# 🌊 AdminGen by Black Waves
+# 🌊 AdminGen by Code Craft
 
 [![npm version](https://img.shields.io/npm/v/@blackwaves/admingen/beta.svg)](https://www.npmjs.com/package/@blackwaves/admingen)
 [![npm downloads](https://img.shields.io/npm/dw/@blackwaves/admingen.svg)](https://www.npmjs.com/package/@blackwaves/admingen)
