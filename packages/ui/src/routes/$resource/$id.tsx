@@ -46,10 +46,10 @@ function RelationshipField({
 }) {
   const targetResource = field.relationTo
 
-  const { data: relatedData = [], isLoading } = useQuery({
+  const { data: response, isLoading } = useQuery({
     queryKey: ['relatedResource', targetResource],
     queryFn: async () => {
-      if (!targetResource) return []
+      if (!targetResource) return { data: [] }
       const res = await fetch(`/admin/api/${targetResource}`, { credentials: 'include' })
       if (!res.ok) throw new Error(`Failed to fetch ${targetResource}`)
       return res.json()
@@ -58,10 +58,12 @@ function RelationshipField({
     staleTime: 60000,
   })
 
+  const relatedData = response?.data || []
+
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={fieldApi.name} className="capitalize">
-        {field.label}
+        {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
         value={fieldApi.state.value ? String(fieldApi.state.value) : ''}
@@ -69,7 +71,7 @@ function RelationshipField({
           const numValue = !isNaN(Number(value)) ? Number(value) : value
           fieldApi.handleChange(numValue)
         }}
-        disabled={isLoading}
+        disabled={isLoading || field.readOnly}
       >
         <SelectTrigger id={fieldApi.name} className="w-full bg-[#111827] text-white border-gray-700">
           <SelectValue
@@ -86,6 +88,40 @@ function RelationshipField({
               </SelectItem>
             )
           })}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function SelectField({
+  field,
+  fieldApi,
+}: {
+  field: AdminField
+  fieldApi: any
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={fieldApi.name} className="capitalize">
+        {field.label} {field.required && <span className="text-red-500">*</span>}
+      </Label>
+      <Select
+        value={fieldApi.state.value ? String(fieldApi.state.value) : ''}
+        onValueChange={(value) => {
+          fieldApi.handleChange(value)
+        }}
+        disabled={field.readOnly}
+      >
+        <SelectTrigger id={fieldApi.name} className="w-full bg-[#111827] text-white border-gray-700">
+          <SelectValue placeholder={`Select ${field.label}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {field.options?.map((opt) => (
+            <SelectItem key={opt.value} value={String(opt.value)}>
+              {opt.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
@@ -225,11 +261,20 @@ function EditComponent() {
                 )
               }
 
+              if (field.type === 'select') {
+                return (
+                  <SelectField
+                    field={field}
+                    fieldApi={fieldApi}
+                  />
+                )
+              }
+
               // RENDER REGULAR FIELDS
               return (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor={fieldApi.name} className="capitalize">
-                    {field.label}
+                    {field.label} {field.required && <span className="text-red-500">*</span>}
                   </Label>
                   {field.type === 'textarea' ? (
                      <textarea
@@ -237,10 +282,23 @@ function EditComponent() {
                         name={fieldApi.name}
                         placeholder={`Enter ${field.label}`}
                         className="bg-[#111827] text-white border border-gray-700 rounded-md px-3 py-2 min-h-[100px]"
-                        value={fieldApi.state.value as string}
+                        value={fieldApi.state.value as string || ''}
                         onBlur={fieldApi.handleBlur}
                         onChange={(e) => fieldApi.handleChange(e.target.value)}
+                        disabled={field.readOnly}
                      />
+                  ) : field.type === 'boolean' ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={fieldApi.name}
+                        checked={!!fieldApi.state.value}
+                        onChange={(e) => fieldApi.handleChange(e.target.checked)}
+                        disabled={field.readOnly}
+                        className="w-4 h-4 rounded border-gray-700 bg-[#111827] text-[#00eaff] focus:ring-[#00eaff]"
+                      />
+                      <Label htmlFor={fieldApi.name}>Active</Label>
+                    </div>
                   ) : (
                     <Input
                       id={fieldApi.name}
@@ -263,7 +321,8 @@ function EditComponent() {
                             : val,
                         )
                       }}
-                      type={field.type === 'number' ? 'number' : 'text'}
+                      type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                      disabled={field.readOnly}
                     />
                   )}
                 </div>

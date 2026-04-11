@@ -35,6 +35,7 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                 // Basic Type Mapping
                 const dType = (column as any).dataType || (column as any).columnType || 'text';
                 let adminType: AdminField['type'] = 'text';
+                let options: { label: string; value: string | number }[] | undefined = undefined;
 
                 if (['integer', 'serial', 'bigint', 'smallint', 'real', 'double precision', 'numeric', 'decimal'].includes(dType)) {
                     adminType = 'number';
@@ -43,7 +44,15 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                 } else if (['date', 'timestamp', 'timestamp without time zone'].includes(dType)) {
                     adminType = 'date';
                 } else if (['text', 'json'].includes(dType)) {
-                    adminType = 'textarea';
+                    // Check if it's an enum (Drizzle enums usually have .enumValues)
+                    if ((column as any).enumValues) {
+                        adminType = 'select';
+                        options = (column as any).enumValues.map((v: any) => ({ label: v, value: v }));
+                    } else if (dType === 'json') {
+                        adminType = 'textarea';
+                    } else {
+                        adminType = 'textarea';
+                    }
                 }
 
                 fields.push({
@@ -51,6 +60,9 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                     label: colName,
                     type: adminType,
                     isId: (column as any).primary || (column as any).isPrimary,
+                    required: (column as any).notNull,
+                    readOnly: (column as any).generated || (column as any).isGenerated,
+                    options
                 });
 
                 if ((column as any).primary) {
