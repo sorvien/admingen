@@ -1,5 +1,5 @@
 {
-  "name": "example-app",
+  "name": "example-app-postgres",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "db:generate": "bunx drizzle-kit generate",
@@ -9,9 +9,10 @@
   "dependencies": {
     "elysia": "1.2.10",
     "drizzle-orm": "latest",
+    "postgres": "latest",
     "@elysiajs/cors": "1.2.0",
-"@blackwaves/admingen": "workspace:*",
-  "@blackwaves/admingen-adapter-drizzle": "workspace:*"
+    "@blackwaves/admingen": "workspace:*",
+    "@blackwaves/admingen-adapter-drizzle": "workspace:*"
   },
   "devDependencies": {
     "bun-types": "latest",
