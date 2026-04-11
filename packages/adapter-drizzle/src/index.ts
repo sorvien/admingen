@@ -1,11 +1,12 @@
-import { eq } from 'drizzle-orm';
+import { eq, asc, desc, like, sql, count } from 'drizzle-orm';
 import type { Context } from 'elysia';
 import type {
   AdminConfig,
   AdapterResult,
   AdminHandlers,
   AdminSchema,
-  AdminField
+  AdminField,
+  PaginatedResponse
 } from '@blackwaves/admingen-types';
 import { introspectSchema } from './introspect';
 
@@ -58,25 +59,63 @@ export function createDrizzleAdapter(options: {
     handlerMap[resourceSlug] = {
 
       // FIND MANY
-      findMany: async ({ db }: { db: any }) => {
-        // Drizzle query builder needs the *property name* in the schema object (e.g. `db.query.users`)
-        // introspection sets `slug` to this key.
+      findMany: async ({ db, query }: { db: any, query: any }) => {
         if (!db.query[resourceSlug]) {
           throw new Error(`Drizzle query not found for '${resourceSlug}'. Did you pass the schema to drizzle()?`);
         }
-        return db.query[resourceSlug].findMany({
-          with: Object.keys(withRelations).length > 0 ? withRelations : undefined
+
+        const page = parseInt(query.page || '1');
+        const pageSize = parseInt(query.pageSize || '10');
+        const offset = (page - 1) * pageSize;
+        const sort = query.sort;
+        const order = query.order || 'asc';
+        const filterStr = query.filter; // column:value
+
+        let where: any = undefined;
+        if (filterStr && filterStr.includes(':')) {
+          const [col, val] = filterStr.split(':');
+          if (table[col]) {
+            const column = table[col];
+            const dType = (column as any).dataType || (column as any).columnType;
+            if (['text', 'string', 'varchar'].includes(dType)) {
+              where = like(column, `%${val}%`);
+            } else {
+              where = eq(column, val);
+            }
+          }
+        }
+
+        const orderBy = sort && table[sort]
+          ? (order === 'desc' ? desc(table[sort]) : asc(table[sort]))
+          : undefined;
+
+        const data = await db.query[resourceSlug].findMany({
+          with: Object.keys(withRelations).length > 0 ? withRelations : undefined,
+          limit: pageSize,
+          offset: offset,
+          orderBy: orderBy,
+          where: where,
         });
+
+        const countRes = await db.select({ count: count() }).from(table).where(where);
+        const total = countRes[0].count;
+
+        return {
+          data,
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        } as PaginatedResponse<any>;
       },
 
       // FIND ONE
       findOne: async ({ db, params }: { db: any, params: { id: any } }) => {
-        const id = Number(params.id);
         const pkField = resourceConfig.fields.find(f => f.isId);
-        // Fallback to 'id' if not detected, though introspection tries to find it.
-        // We need the ACTUAL table column object for `eq()`.
-        // `table` is the Drizzle table object.
         const pkColumn = table[pkField?.name || 'id'];
+        
+        // Handle ID type (Drizzle integer vs string)
+        const id = pkField?.type === 'number' ? Number(params.id) : params.id;
 
         if (!pkColumn) {
           throw new Error(`Primary key column not found for ${resourceSlug}`);
@@ -91,10 +130,17 @@ export function createDrizzleAdapter(options: {
       // CREATE
       create: async ({ db, body }: { db: any, body: any }) => {
         const data = { ...body };
-        // Clean up data for insertion (map relations)
+        // Clean up data for insertion
+        const validFields = new Set(resourceConfig.fields.map(f => f.name));
+        for (const key of Object.keys(data)) {
+          if (!validFields.has(key) && !foreignKeyMap[key]) {
+            delete data[key];
+          }
+        }
+
+        // Remap relationship fields to FK columns
         for (const [fieldName, dbColumn] of Object.entries(foreignKeyMap)) {
           if (data[fieldName] !== undefined) {
-            // Only remap if the names are different
             if (fieldName !== dbColumn) {
               data[dbColumn] = data[fieldName];
               delete data[fieldName];
@@ -102,24 +148,28 @@ export function createDrizzleAdapter(options: {
           }
         }
 
-        // Remove fields that are not columns (like relationship fields that didn't match FKs)
-        // ... (Skipping robust cleanup for now, reliance on Drizzle to ignore or error)
-
         const res = await db.insert(table).values(data).returning();
         return res[0];
       },
 
       // UPDATE
       update: async ({ db, params, body }: { db: any, params: { id: any }, body: any }) => {
-        const id = Number(params.id);
-        const data = { ...body };
         const pkField = resourceConfig.fields.find(f => f.isId);
         const pkColumn = table[pkField?.name || 'id'];
+        const id = pkField?.type === 'number' ? Number(params.id) : params.id;
 
-        // Clean up data for insertion (map relations)
+        const data = { ...body };
+        // Clean up data for update
+        const validFields = new Set(resourceConfig.fields.map(f => f.name));
+        for (const key of Object.keys(data)) {
+          if (!validFields.has(key) && !foreignKeyMap[key]) {
+            delete data[key];
+          }
+        }
+
+        // Remap relationship fields to FK columns
         for (const [fieldName, dbColumn] of Object.entries(foreignKeyMap)) {
           if (data[fieldName] !== undefined) {
-            // Only remap if the names are different to avoid deleting the value we just set
             if (fieldName !== dbColumn) {
               data[dbColumn] = data[fieldName];
               delete data[fieldName];
@@ -137,9 +187,9 @@ export function createDrizzleAdapter(options: {
 
       // DELETE
       delete: async ({ db, params }: { db: any, params: { id: any } }) => {
-        const id = Number(params.id);
         const pkField = resourceConfig.fields.find(f => f.isId);
         const pkColumn = table[pkField?.name || 'id'];
+        const id = pkField?.type === 'number' ? Number(params.id) : params.id;
 
         const res = await db.delete(table)
           .where(eq(pkColumn, id))

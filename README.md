@@ -17,6 +17,8 @@ This framework introspects your Drizzle schema, auto-generates a secure API, and
 
 - **Zero-Config API:** Automatically generates a full REST API from your existing Drizzle schema.
 - **Dynamic UI:** The React frontend (built with TanStack) dynamically renders tables, filters, and sorting based on your API schema.
+- **Server-side Operations:** Efficiently handle large datasets with server-side pagination, sorting, and filtering.
+- **Intelligent Introspection:** Automatically detects enums, required fields, and read-only columns.
 - **Plug-and-Play:** Add it to your existing Elysia server in just a few lines of code.
 - **Modern Stack:** Built on the fastest, most modern tools: Bun, Elysia, and Drizzle.
 - **Open Source:** MIT-licensed, built in public by **[@blackwaves](https://github.com/blackwavesdev)**.
@@ -34,11 +36,9 @@ This framework introspects your Drizzle schema, auto-generates a secure API, and
 
 ---
 
-## 🚦 Status: Beta
+## 🚦 Status: MVP Ready
 
-This project is currently in **beta**. The core functionality including Create, Read, Update, and Delete (CRUD) is complete, tested, and published to npm.
-
-We are actively working on Authentication and advanced features.
+This project is now **MVP Ready**. The core functionality including Create, Read, Update, and Delete (CRUD) is complete, with server-side support for performance and scalability.
 
 ---
 
@@ -119,12 +119,14 @@ We are building this in public—follow our progress!
 - [x] **API:** Auto-generation of API routes in Elysia
 - [x] **UI:** Dynamic Sidebar Generation
 - [x] **UI:** Dynamic Table View (List/Get)
-- [x] **UI:** Filtering & Sorting
+- [x] **UI:** Server-side Pagination, Filtering & Sorting
 - [x] **Build:** Automated publishing pipeline to npm
 - [x] **API/UI:** Create Functionality
 - [x] **API/UI:** Update Functionality
 - [x] **API/UI:** Delete Functionality
-- [ ] **Auth:** Simple beforeHandle authentication hooks
+- [x] **Introspection:** Improved metadata (Enums, Required, Read-only)
+- [ ] **Auth:** Integrated authentication providers (Lucia, Clerk)
+- [ ] **Customization:** Support for custom field components and dashboard widgets
 
 ---
 

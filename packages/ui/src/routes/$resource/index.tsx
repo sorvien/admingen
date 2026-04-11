@@ -14,43 +14,19 @@ import {
   type ColumnFiltersState,
   type FilterFn,
   type SortingFn,
+  type PaginationState,
+  type SortingState,
 } from '@tanstack/react-table'
 import {
   compareItems,
   rankItem,
   type RankingInfo,
 } from '@tanstack/match-sorter-utils'
-import type { AdminField, AdminSchema } from '@blackwaves/admingen-types'
-import { Link } from '@tanstack/react-router' // <-- 1. Make sure Link is imported
-import { Button } from '@/components/ui/button' // <-- 2. Import your Shadcn button
-// This "augments" the module, telling TypeScript about our 'fuzzy' filter
-declare module '@tanstack/react-table' {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>
-  }
-  interface FilterMeta {
-    itemRank: RankingInfo
-  }
-}
+import type { AdminField, AdminSchema, PaginatedResponse } from '@blackwaves/admingen-types'
+import { Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
 
-// Our custom fuzzy filter function
-const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-  const itemRank = rankItem(row.getValue(columnId), value)
-  addMeta?.({ itemRank })
-  return itemRank.passed
-}
-
-// Our custom fuzzy sort function
-const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
-  let dir = 0
-  if (rowA.columnFiltersMeta[columnId]) {
-    dir = compareItems(
-      rowA.columnFiltersMeta[columnId]?.itemRank!,
-      rowB.columnFiltersMeta[columnId]?.itemRank!,
-    )
-  }
-  return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir
-}
+// ... (keep fuzzyFilter and fuzzySort if needed for local fallback, but we'll use server-side)
 
 // --- Data Fetching ---
 async function fetchAdminSchema(): Promise<AdminSchema> {
@@ -59,8 +35,27 @@ async function fetchAdminSchema(): Promise<AdminSchema> {
   return res.json()
 }
 
-async function fetchResourceData(resourceName: string) {
-  const res = await fetch(`/admin/api/${resourceName}`, { credentials: 'include' })
+async function fetchResourceData(
+  resourceName: string, 
+  pagination: PaginationState, 
+  sorting: SortingState, 
+  columnFilters: ColumnFiltersState
+): Promise<PaginatedResponse<any>> {
+  const params = new URLSearchParams()
+  params.set('page', String(pagination.pageIndex + 1))
+  params.set('pageSize', String(pagination.pageSize))
+
+  if (sorting.length > 0) {
+    params.set('sort', sorting[0].id)
+    params.set('order', sorting[0].desc ? 'desc' : 'asc')
+  }
+
+  if (columnFilters.length > 0) {
+    // Simple implementation: use the first filter
+    params.set('filter', `${columnFilters[0].id}:${columnFilters[0].value}`)
+  }
+
+  const res = await fetch(`/admin/api/${resourceName}?${params.toString()}`, { credentials: 'include' })
   if (!res.ok)
     throw new Error(`Failed to fetch resource data for ${resourceName}`)
   return res.json()
@@ -73,10 +68,14 @@ export const Route = createFileRoute('/$resource/')({
 
 function ResourceListComponent() {
   const { resource: resourceName } = useParams({ from: '/$resource/' })
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  )
-  const [globalFilter, setGlobalFilter] = React.useState('')
+  
+  // Table State
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
 
   const { data: schema, isLoading: schemaLoading } = useQuery({
     queryKey: ['adminSchema'],
@@ -84,9 +83,9 @@ function ResourceListComponent() {
     staleTime: 60000,
   })
 
-  const { data: resourceData, isLoading: dataLoading } = useQuery({
-    queryKey: ['resourceData', resourceName],
-    queryFn: () => fetchResourceData(resourceName),
+  const { data: paginatedData, isLoading: dataLoading } = useQuery({
+    queryKey: ['resourceData', resourceName, pagination, sorting, columnFilters],
+    queryFn: () => fetchResourceData(resourceName, pagination, sorting, columnFilters),
     enabled: !!resourceName,
   })
 
@@ -102,8 +101,6 @@ function ResourceListComponent() {
       const baseColumn = {
         accessorKey: field.name,
         header: () => <span>{field.label}</span>,
-        filterFn: 'fuzzy' as const,
-        sortingFn: fuzzySort,
       };
 
       // Handle relationship fields
@@ -114,7 +111,7 @@ function ResourceListComponent() {
             const value = info.getValue();
             
             // If the API did its job, 'value' is an OBJECT { id: 1, email: '...' }
-            if (value && typeof value === 'object') {
+            if (value && typeof value === 'object' && value !== null) {
               // Try to find a displayable field
               return value.email || value.name || value.title || value.username || value.id;
             }
@@ -128,7 +125,11 @@ function ResourceListComponent() {
       // Regular field
       return {
         ...baseColumn,
-        cell: (info: any) => info.getValue(),
+        cell: (info: any) => {
+          const val = info.getValue();
+          if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+          return val;
+        },
       };
     })
 
@@ -156,16 +157,6 @@ function ResourceListComponent() {
                       credentials: 'include'
                     });
                     if (!res.ok) throw new Error('Failed to delete');
-                    // Invalidate queries to refresh the list
-                    // We need access to queryClient here, but we are inside useMemo.
-                    // A better way is to pass a callback or use a component for the cell.
-                    // For simplicity in this "headless" setup, we might need a slight refactor
-                    // or just force a reload (bad UX).
-                    // Let's use a hack for now or refactor to a component.
-                    // Actually, let's just reload the window for the MVP or assume the user will refresh.
-                    // WAIT, we can use `window.location.reload()` as a crude fallback, 
-                    // but better is to use a proper mutation in a component.
-                    // Let's make the cell a component below.
                     window.location.reload(); 
                   } catch (e) {
                     alert('Error deleting item');
@@ -184,28 +175,22 @@ function ResourceListComponent() {
     return [...cols, actionsColumn];
   }, [resource, resourceName])
 
-  // --- INFINITE LOOP FIX ---
-  // We must memoize the data and filterFns objects so they aren't
-  // recreated on every render, which causes the loop.
-  const data = React.useMemo(() => resourceData ?? [], [resourceData])
-  const filterFns = React.useMemo(() => ({ fuzzy: fuzzyFilter }), [])
-  // --- END FIX ---
-
   const table = useReactTable({
-    data: data, // Use memoized data
+    data: paginatedData?.data ?? [],
     columns,
-    filterFns: filterFns, // Use memoized filterFns
+    pageCount: paginatedData?.totalPages ?? -1,
     state: {
+      pagination,
+      sorting,
       columnFilters,
-      globalFilter,
     },
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: 'fuzzy',
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     debugTable: import.meta.env.DEV,
   })
 
@@ -216,6 +201,7 @@ function ResourceListComponent() {
   if (!resource) {
     return <div className="text-red-500">Resource configuration not found.</div>
   }
+
 
   // ...existing code...
   return (
@@ -250,7 +236,7 @@ function ResourceListComponent() {
                 type="button"
                 className="cursor-pointer px-3 py-2 bg-gray-800 text-sm text-gray-200 rounded-md hover:bg-gray-700/90 active:scale-95 transform transition focus:outline-none focus:ring-2 focus:ring-blue-400"
                 onClick={() => {
-                  const payload = JSON.stringify(resourceData ?? [], null, 2)
+                  const payload = JSON.stringify(paginatedData?.data ?? [], null, 2)
                   const blob = new Blob([payload], { type: 'application/json' })
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')
@@ -267,13 +253,7 @@ function ResourceListComponent() {
           </header>
 
           <div className="mb-4">
-            <DebouncedInput
-              value={globalFilter ?? ''}
-              onChange={(value) => setGlobalFilter(String(value))}
-              className="w-full md:w-72 p-3 bg-gray-800 text-gray-100 rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-400 outline-none transition"
-              placeholder="Search all columns..."
-              aria-label={`Search ${resource.label}`}
-            />
+            {/* Global filter removed in favor of column filters or implement server-side global search if needed */}
           </div>
 
           <div className="rounded-lg overflow-hidden border border-gray-700 shadow-sm">
