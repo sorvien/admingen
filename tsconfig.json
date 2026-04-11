@@ -5,6 +5,7 @@
     { "path": "packages/adapter-drizzle" },
     { "path": "packages/admingen" },
     { "path": "packages/ui" },
-    { "path": "example-app" }
+    { "path": "example-app" },
+    { "path": "example-app-postgres" }
   ]
 }

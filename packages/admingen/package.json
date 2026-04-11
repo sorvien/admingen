@@ -34,17 +34,17 @@
   "dev": "tsc -b --watch"
 },
 "dependencies": {
-  "@elysiajs/static": "latest",
+  "@elysiajs/static": "1.2.0",
   "@blackwaves/admingen-types": "workspace:*"
 },
 "readme": "../../README.md",
   "peerDependencies": {
-    "elysia": "*"
+    "elysia": "1.2.10"
   },
   "devDependencies": {
     "bun-types": "latest",
     "typescript": "^5.3.0",
-    "elysia": "latest"
+    "elysia": "1.2.10"
   },
   "publishConfig": {
     "access": "public",

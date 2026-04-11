@@ -61,8 +61,8 @@ function RelationshipField({
   const relatedData = response?.data || []
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={fieldApi.name} className="capitalize">
+    <div className="flex flex-col gap-2 text-white">
+      <Label htmlFor={fieldApi.name} className="capitalize text-white">
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
@@ -102,8 +102,8 @@ function SelectField({
   fieldApi: any
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={fieldApi.name} className="capitalize">
+    <div className="flex flex-col gap-2 text-white">
+      <Label htmlFor={fieldApi.name} className="capitalize text-white">
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
@@ -124,6 +124,77 @@ function SelectField({
           ))}
         </SelectContent>
       </Select>
+    </div>
+  )
+}
+
+function JsonField({
+  field,
+  fieldApi,
+}: {
+  field: AdminField
+  fieldApi: any
+}) {
+  const [localValue, setLocalValue] = React.useState('')
+  const [isError, setIsError] = React.useState(false)
+
+  // Initialize and keep in sync with field value
+  React.useEffect(() => {
+    const val = fieldApi.state.value
+    if (val && typeof val === 'object') {
+      setLocalValue(JSON.stringify(val, null, 2))
+    } else if (typeof val === 'string') {
+      try {
+        // Test if it's already a JSON string
+        const parsed = JSON.parse(val)
+        if (typeof parsed === 'object' && parsed !== null) {
+          setLocalValue(JSON.stringify(parsed, null, 2))
+        } else {
+          setLocalValue(val)
+        }
+      } catch (e) {
+        setLocalValue(val)
+      }
+    } else {
+      setLocalValue(String(val ?? ''))
+    }
+  }, [fieldApi.state.value])
+
+  const handleChange = (val: string) => {
+    setLocalValue(val)
+    try {
+      if (val.trim() === '') {
+        fieldApi.handleChange(null)
+        setIsError(false)
+        return
+      }
+      const parsed = JSON.parse(val)
+      fieldApi.handleChange(parsed)
+      setIsError(false)
+    } catch (e) {
+      // If it's invalid JSON, we still update the local value for typing,
+      // but maybe we shouldn't update the field API or keep the string.
+      // For JSONB columns, Drizzle/Postgres expects an object.
+      setIsError(true)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2 text-white">
+      <Label htmlFor={fieldApi.name} className="capitalize text-white">
+        {field.label} {field.required && <span className="text-red-500">*</span>}
+      </Label>
+      <textarea
+        id={fieldApi.name}
+        name={fieldApi.name}
+        placeholder={`Enter ${field.label} (JSON)`}
+        className={`bg-[#111827] text-white border ${isError ? 'border-red-500' : 'border-gray-700'} rounded-md px-3 py-2 min-h-[150px] font-mono text-xs`}
+        value={localValue}
+        onBlur={fieldApi.handleBlur}
+        onChange={(e) => handleChange(e.target.value)}
+        disabled={field.readOnly}
+      />
+      {isError && <span className="text-xs text-red-500">Invalid JSON format</span>}
     </div>
   )
 }
@@ -232,7 +303,7 @@ function EditComponent() {
   if (!resource) return <div className="p-6 text-red-500">Resource not found.</div>
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-6">
+    <div className="max-w-2xl mx-auto py-10 px-6 text-white">
       <h1 className="text-3xl font-bold mb-8 capitalize text-white">
         Edit {resource.label}
       </h1>
@@ -271,23 +342,23 @@ function EditComponent() {
               }
 
               // RENDER REGULAR FIELDS
+              const isObject = fieldApi.state.value && typeof fieldApi.state.value === 'object';
+              
+              if (field.type === 'textarea' || isObject) {
+                return (
+                  <JsonField
+                    field={field}
+                    fieldApi={fieldApi}
+                  />
+                )
+              }
+
               return (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor={fieldApi.name} className="capitalize">
+                <div className="flex flex-col gap-2 text-white">
+                  <Label htmlFor={fieldApi.name} className="capitalize text-white">
                     {field.label} {field.required && <span className="text-red-500">*</span>}
                   </Label>
-                  {field.type === 'textarea' ? (
-                     <textarea
-                        id={fieldApi.name}
-                        name={fieldApi.name}
-                        placeholder={`Enter ${field.label}`}
-                        className="bg-[#111827] text-white border border-gray-700 rounded-md px-3 py-2 min-h-[100px]"
-                        value={fieldApi.state.value as string || ''}
-                        onBlur={fieldApi.handleBlur}
-                        onChange={(e) => fieldApi.handleChange(e.target.value)}
-                        disabled={field.readOnly}
-                     />
-                  ) : field.type === 'boolean' ? (
+                  {field.type === 'boolean' ? (
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"

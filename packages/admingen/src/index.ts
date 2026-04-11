@@ -25,6 +25,18 @@ export const AdminGen = ({
     // console.log('Checking existence of index.html:', await Bun.file(join(uiAssetsPath, 'index.html')).exists());
     const app = new Elysia({ prefix: adminPath });
 
+    app.onError(({ code, error, set }: { code: any, error: any, set: any }) => {
+        console.error(`[AdminGen Error] ${code}:`, error);
+        return new Response(JSON.stringify({
+            error: error.message,
+            stack: error.stack,
+            code
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    });
+
     // --- AUTHENTICATION ---
     // 1. Expose Auth State API
     app.get('/api/_auth/me', async (ctx) => {

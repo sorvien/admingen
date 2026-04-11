@@ -10,6 +10,29 @@ import type {
 } from '@blackwaves/admingen-types';
 import { introspectSchema } from './introspect';
 
+// Helper to sanitize data for JSON serialization (BigInt -> Number, Date -> ISOString)
+function sanitizeData(data: any): any {
+  if (data === null || data === undefined) return data;
+  
+  if (typeof data === 'bigint') return Number(data);
+  
+  if (data instanceof Date) return data.toISOString();
+  
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeData(item));
+  }
+  
+  if (typeof data === 'object') {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      sanitized[key] = sanitizeData(value);
+    }
+    return sanitized;
+  }
+  
+  return data;
+}
+
 export function createDrizzleAdapter(options: {
   schema: Record<string, any>;
   config?: Partial<AdminConfig>; // Allow optional override/extension in future
@@ -98,15 +121,15 @@ export function createDrizzleAdapter(options: {
         });
 
         const countRes = await db.select({ count: count() }).from(table).where(where);
-        const total = countRes[0].count;
+        const total = Number(countRes[0].count);
 
-        return {
+        return sanitizeData({
           data,
           total,
           page,
           pageSize,
           totalPages: Math.ceil(total / pageSize),
-        } as PaginatedResponse<any>;
+        }) as PaginatedResponse<any>;
       },
 
       // FIND ONE
@@ -121,10 +144,10 @@ export function createDrizzleAdapter(options: {
           throw new Error(`Primary key column not found for ${resourceSlug}`);
         }
 
-        return db.query[resourceSlug].findFirst({
+        return sanitizeData(await db.query[resourceSlug].findFirst({
           where: eq(pkColumn, id),
           with: Object.keys(withRelations).length > 0 ? withRelations : undefined
-        });
+        }));
       },
 
       // CREATE
@@ -149,7 +172,7 @@ export function createDrizzleAdapter(options: {
         }
 
         const res = await db.insert(table).values(data).returning();
-        return res[0];
+        return sanitizeData(res[0]);
       },
 
       // UPDATE
@@ -182,7 +205,7 @@ export function createDrizzleAdapter(options: {
           .where(eq(pkColumn, id))
           .returning();
 
-        return res[0];
+        return sanitizeData(res[0]);
       },
 
       // DELETE
@@ -195,7 +218,7 @@ export function createDrizzleAdapter(options: {
           .where(eq(pkColumn, id))
           .returning();
 
-        return res[0];
+        return sanitizeData(res[0]);
       }
     };
   }
