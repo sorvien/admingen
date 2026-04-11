@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "example-app"
+    "example-app",
+    "example-app-postgres"
   ],
 "scripts": {
   "build": "cd packages/types && bun run build && cd ../adapter-drizzle && bun run build && cd ../ui && bun run clean && bun run build && cd ../admingen && bun run build"

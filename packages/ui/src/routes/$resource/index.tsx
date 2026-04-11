@@ -128,6 +128,13 @@ function ResourceListComponent() {
         cell: (info: any) => {
           const val = info.getValue();
           if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+          if (val && typeof val === 'object') {
+            try {
+              return JSON.stringify(val);
+            } catch (e) {
+              return '[Complex Object]';
+            }
+          }
           return val;
         },
       };
