@@ -16,6 +16,7 @@ export const AdminGen = ({
     beforeHandle,
     authProvider
 }: AdminGenOptions) => {
+    console.log('AdminGen Initializing (v2) with path:', adminPath);
 
     const uiAssetsPath = join(import.meta.dirname, '..', '..', 'ui-assets');
     console.log('--- AdminGen Debug ---');
@@ -52,11 +53,11 @@ export const AdminGen = ({
 
         for (const resource of schemaJson.resources) {
             const resourceName = resource.name;
-            api.get(`/${resourceName}`, handlers.findMany(resourceName));
-            api.get(`/${resourceName}/:id`, handlers.findOne(resourceName));
-            api.post(`/${resourceName}`, handlers.create(resourceName));
-            api.patch(`/${resourceName}/:id`, handlers.update(resourceName));
-            api.delete(`/${resourceName}/:id`, handlers.delete(resourceName));
+            api.get(`/${resourceName}`, (ctx) => handlers.findMany(resourceName)(ctx));
+            api.get(`/${resourceName}/:id`, (ctx) => handlers.findOne(resourceName)(ctx));
+            api.post(`/${resourceName}`, (ctx) => handlers.create(resourceName)(ctx));
+            api.patch(`/${resourceName}/:id`, (ctx) => handlers.update(resourceName)(ctx));
+            api.delete(`/${resourceName}/:id`, (ctx) => handlers.delete(resourceName)(ctx));
         }
         return api;
     });
@@ -66,43 +67,44 @@ export const AdminGen = ({
     }
 
     // 2. STATIC ASSETS
-    // 2. STATIC ASSETS
-    // Manual handler for assets to ensure they are found and have correct mime type
-    app.get('/assets/*', async ({ path, set }) => {
-        const filePath = join(uiAssetsPath, path);
-        const file = Bun.file(filePath);
-        if (await file.exists()) {
-            // Bun auto-sets content-type usually, but we can be explicit if needed
-            return file;
+    // Serve static assets (favicon, manifest, etc.) and JS/CSS files
+    app.get('/*', async ({ path, set }) => {
+        console.log('Static asset request:', path);
+        // Strip the adminPath from the path to look up the file
+        // e.g. /admin/assets/index.js -> assets/index.js
+        // e.g. /admin/favicon.ico -> favicon.ico
+        let relativePath = path;
+        if (path.startsWith(adminPath)) {
+            relativePath = path.slice(adminPath.length);
         }
-        return new Response('Asset not found', { status: 404 });
+        if (relativePath.startsWith('/')) {
+            relativePath = relativePath.slice(1);
+        }
+        console.log('Resolved relativePath:', relativePath);
+
+        // 1. Check for specific file in ui-assets
+        if (relativePath) {
+            const filePath = join(uiAssetsPath, relativePath);
+            const file = Bun.file(filePath);
+            if (await file.exists()) {
+                return file;
+            }
+        }
+
+        // 2. Fallback to index.html for SPA routes (if not an asset request)
+        if (!relativePath.includes('.') || relativePath.endsWith('.html')) {
+            const htmlFile = Bun.file(join(uiAssetsPath, 'index.html'));
+            if (await htmlFile.exists()) {
+                set.headers['Content-Type'] = 'text/html; charset=utf-8';
+                return htmlFile;
+            }
+        }
+
+        return new Response('Not found', { status: 404 });
     });
 
-    app.use(
-        staticPlugin({
-            assets: uiAssetsPath,
-            prefix: '', // Serve at root relative to app (so /admin/assets -> assets/)
-            indexHTML: false,
-            alwaysStatic: true,
-        })
-    );
-
-    // 3. index.html SPA fallback for ALL of:
-    //   - /admin
-    //   - /admin/
-    //   - /admin/posts, etc.
-    // This change is for Elysia: we need BOTH "" and "/*" to fully catch /admin (w/o slash) and anything else.
-    // Serve index.html for both /admin and /admin/
+    // Handle root /admin and /admin/ (duplicate of above but explicit for Elysia's router)
     app.get('', async ({ set }) => {
-        const htmlFile = Bun.file(join(uiAssetsPath, 'index.html'));
-        if (await htmlFile.exists()) {
-            set.headers['Content-Type'] = 'text/html; charset=utf-8';
-            return htmlFile;
-        }
-        return new Response('Admin UI not found', { status: 404 });
-    });
-
-    app.get('/*', async ({ set }) => {
         const htmlFile = Bun.file(join(uiAssetsPath, 'index.html'));
         if (await htmlFile.exists()) {
             set.headers['Content-Type'] = 'text/html; charset=utf-8';
