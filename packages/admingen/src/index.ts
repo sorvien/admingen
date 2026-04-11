@@ -16,6 +16,7 @@ export const AdminGen = ({
     beforeHandle,
     authProvider
 }: AdminGenOptions) => {
+    console.log('AdminGen Initializing (v2) with path:', adminPath);
 
     const uiAssetsPath = join(import.meta.dirname, '..', '..', 'ui-assets');
     console.log('--- AdminGen Debug ---');
