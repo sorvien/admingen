@@ -15,7 +15,7 @@
   "readme": "../../README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sorvien/admingen.git",
+    "url": "git+https://github.com/sorvien/admingen.git",
     "directory": "packages/types"
   },
   "homepage": "https://github.com/sorvien/admingen",

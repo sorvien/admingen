@@ -37,13 +37,20 @@ jobs:
           sed -i 's/workspace:\*/${{ env.PACKAGE_VERSION }}/g' packages/ui/package.json
           echo "Replaced workspace:* with ${{ env.PACKAGE_VERSION }}"
 
-      # --- THIS IS THE NEW PART ---
       - name: Setup Node.js for publishing
         uses: actions/setup-node@v4
         with:
-          node-version: "20" # Use a standard Node.js version for npm
-          registry-url: "https://registry.npmjs.org/" # Point to the public npm registry
-          scope: "@sorvien" # Set your scope
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org/"
+          scope: "@sorvien"
+
+      - name: Configure NPM user credentials
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          echo "Successfully authenticated as:"
+          npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @sorvien/admingen-types
         run: cd packages/types && npm publish --access public --tag beta
