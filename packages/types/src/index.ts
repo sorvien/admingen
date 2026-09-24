@@ -4,10 +4,11 @@
 export interface AdminField {
   name: string;
   label?: string;
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'relationship' | 'select';
+  type: 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'relationship' | 'select' | 'json';
   isId?: boolean;
   required?: boolean;
   readOnly?: boolean;
+  hidden?: boolean;
   options?: { label: string; value: string | number }[];
   // For relationships
   relationTo?: string; // e.g. "users"

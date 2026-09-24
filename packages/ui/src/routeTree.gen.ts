@@ -9,20 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResourceIndexRouteImport } from './routes/$resource/index'
-import { Route as ResourceCreateRouteImport } from './routes/$resource/create'
 import { Route as ResourceIdRouteImport } from './routes/$resource/$id'
+import { Route as ResourceCreateRouteImport } from './routes/$resource/create'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourceIndexRoute = ResourceIndexRouteImport.update({
@@ -30,14 +30,14 @@ const ResourceIndexRoute = ResourceIndexRouteImport.update({
   path: '/$resource/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResourceCreateRoute = ResourceCreateRouteImport.update({
-  id: '/$resource/create',
-  path: '/$resource/create',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ResourceIdRoute = ResourceIdRouteImport.update({
   id: '/$resource/$id',
   path: '/$resource/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourceCreateRoute = ResourceCreateRouteImport.update({
+  id: '/$resource/create',
+  path: '/$resource/create',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -46,7 +46,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/$resource/$id': typeof ResourceIdRoute
   '/$resource/create': typeof ResourceCreateRoute
-  '/$resource': typeof ResourceIndexRoute
+  '/$resource/': typeof ResourceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -66,11 +66,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/login'
-    | '/$resource/$id'
-    | '/$resource/create'
-    | '/$resource'
+    '/' | '/login' | '/$resource/$id' | '/$resource/create' | '/$resource/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/login' | '/$resource/$id' | '/$resource/create' | '/$resource'
   id:
@@ -92,13 +88,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -106,18 +95,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$resource/': {
       id: '/$resource/'
       path: '/$resource'
-      fullPath: '/$resource'
+      fullPath: '/$resource/'
       preLoaderRoute: typeof ResourceIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/$resource/create': {
-      id: '/$resource/create'
-      path: '/$resource/create'
-      fullPath: '/$resource/create'
-      preLoaderRoute: typeof ResourceCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$resource/$id': {
@@ -125,6 +114,13 @@ declare module '@tanstack/react-router' {
       path: '/$resource/$id'
       fullPath: '/$resource/$id'
       preLoaderRoute: typeof ResourceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$resource/create': {
+      id: '/$resource/create'
+      path: '/$resource/create'
+      fullPath: '/$resource/create'
+      preLoaderRoute: typeof ResourceCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
