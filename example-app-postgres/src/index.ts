@@ -48,10 +48,12 @@ const app = new Elysia()
     cookie.auth.remove();
     return { success: true };
   })
-  .use(AdminGen({
+const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+
+app.use(AdminGen({
     adapterResult,
     authProvider: dummyAuthProvider
   }))
-  .listen(3000);
+  .listen(port);
 
-console.log(`🚀 Advanced Admin Panel live at http://localhost:3000/admin`);
+console.log(`🚀 Advanced Admin Panel live at http://localhost:${port}/admin`);
