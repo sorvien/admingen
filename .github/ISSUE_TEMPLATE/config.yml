@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🌱 Looking for a Good First Issue?
+    url: https://github.com/sorvien/admingen/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
+    about: Browse beginner-friendly issues ready to be picked up by contributors!
+  - name: 💬 Ask a Question or Discuss an Idea
+    url: https://github.com/sorvien/admingen/discussions
+    about: Join community discussions, ask setup questions, or propose ideas before filing a feature request.
