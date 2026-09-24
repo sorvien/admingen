@@ -6,9 +6,11 @@
     "example-app",
     "example-app-postgres"
   ],
-"scripts": {
-  "build": "cd packages/types && bun run build && cd ../adapter-drizzle && bun run build && cd ../ui && bun run clean && bun run build && cd ../admingen && bun run build"
-},
+  "scripts": {
+    "build": "cd packages/types && bun run build && cd ../adapter-drizzle && bun run build && cd ../ui && bun run clean && bun run build && cd ../admingen && bun run build",
+    "test": "bun test",
+    "dev": "cd example-app && bun run dev"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

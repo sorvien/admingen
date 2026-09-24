@@ -33,25 +33,34 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                 columnToFieldName.set(column, colName);
 
                 // Basic Type Mapping
-                const dType = (column as any).dataType || (column as any).columnType || 'text';
+                const dType = String((column as any).dataType || '').toLowerCase();
+                const cType = String((column as any).columnType || '').toLowerCase();
                 let adminType: AdminField['type'] = 'text';
                 let options: { label: string; value: string | number }[] | undefined = undefined;
 
-                if (['integer', 'serial', 'bigint', 'smallint', 'real', 'double precision', 'numeric', 'decimal'].includes(dType)) {
+                if (
+                    ['number', 'integer', 'serial', 'bigint', 'smallint', 'real', 'double precision', 'numeric', 'decimal'].includes(dType) ||
+                    cType.includes('int') || cType.includes('serial') || cType.includes('numeric') || cType.includes('real') || cType.includes('float') || cType.includes('double')
+                ) {
                     adminType = 'number';
-                } else if (['boolean'].includes(dType)) {
+                } else if (dType === 'boolean' || cType.includes('bool')) {
                     adminType = 'boolean';
-                } else if (['date', 'timestamp', 'timestamp without time zone'].includes(dType)) {
+                } else if (['date', 'timestamp'].includes(dType) || cType.includes('date') || cType.includes('time')) {
                     adminType = 'date';
-                } else if (['text', 'json'].includes(dType)) {
+                } else if (['json', 'jsonb'].includes(dType) || cType.includes('json')) {
+                    adminType = 'json';
+                } else if (
+                    ['string', 'text', 'varchar', 'char'].includes(dType) ||
+                    cType.includes('text') || cType.includes('char') || cType.includes('string')
+                ) {
                     // Check if it's an enum (Drizzle enums usually have .enumValues)
-                    if ((column as any).enumValues) {
+                    if ((column as any).enumValues && (column as any).enumValues.length > 0) {
                         adminType = 'select';
                         options = (column as any).enumValues.map((v: any) => ({ label: v, value: v }));
-                    } else if (dType === 'json') {
-                        adminType = 'textarea';
                     } else {
-                        adminType = 'textarea';
+                        const lowerCol = colName.toLowerCase();
+                        const isMultiline = ['content', 'body', 'description', 'bio', 'notes', 'summary', 'message', 'details', 'comment', 'text'].includes(lowerCol);
+                        adminType = isMultiline ? 'textarea' : 'text';
                     }
                 }
 
@@ -112,14 +121,11 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                         // USE MAP: Get 'authorId' from the column instance
                         const fieldName = columnToFieldName.get(foreignKeyColumn);
 
-                        console.log(`Processing Relation ${relName}: Found FK Column? ${!!fieldName} (${fieldName})`);
-
                         // Find the resource and field
                         const resource = tableToResourceMap.get(sourceTable);
                         if (resource && fieldName) {
                             const field = resource.fields.find(f => f.name === fieldName);
                             if (field) {
-                                console.log(`-> Updating field ${fieldName} to use relationship`);
                                 field.type = 'relationship';
                                 // Try to find the referenced resource slug
                                 const refResource = tableToResourceMap.get(conf.referencedTable);
@@ -129,14 +135,9 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                                     // Fallback to table name
                                     field.relationTo = getTableName(conf.referencedTable);
                                 }
-                                console.log(`   > Set relationTo: ${field.relationTo}`);
                                 field.foreignKey = fieldName; // Store property name
                                 field.relationName = relName; // Store the relation name (e.g. 'author') for Drizzle queries
-                            } else {
-                                console.warn(`-> Field ${fieldName} not found in resource ${resource.slug}`);
                             }
-                        } else {
-                            console.warn(`-> Resource or FieldName not found for sourceTable of ${relName}`);
                         }
                     }
                 }

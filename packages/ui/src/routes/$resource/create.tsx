@@ -8,6 +8,7 @@ import type { AdminSchema, AdminField } from '@blackwaves/admingen-types'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -189,6 +190,32 @@ function JsonField({
   )
 }
 
+function TextareaField({
+  field,
+  fieldApi,
+}: {
+  field: AdminField
+  fieldApi: any
+}) {
+  return (
+    <div className="flex flex-col gap-2 text-white">
+      <Label htmlFor={fieldApi.name} className="capitalize text-white">
+        {field.label} {field.required && <span className="text-red-500">*</span>}
+      </Label>
+      <Textarea
+        id={fieldApi.name}
+        name={fieldApi.name}
+        placeholder={`Enter ${field.label}`}
+        className="bg-[#111827] text-white border border-gray-700 rounded-md px-3 py-2 min-h-[100px] placeholder-gray-400 placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-[#00eaff] focus:border-[#00eaff]"
+        value={fieldApi.state.value ?? ''}
+        onBlur={fieldApi.handleBlur}
+        onChange={(e) => fieldApi.handleChange(e.target.value)}
+        disabled={field.readOnly}
+      />
+    </div>
+  )
+}
+
 // --- Main Component ---
 function CreateComponent() {
   const { resource: resourceName } = useParams({ from: '/$resource/create' })
@@ -313,9 +340,18 @@ function CreateComponent() {
               // RENDER REGULAR FIELDS
               const isObject = fieldApi.state.value && typeof fieldApi.state.value === 'object';
 
-              if (field.type === 'textarea' || isObject) {
+              if (field.type === 'json' || (isObject && field.type !== 'textarea')) {
                 return (
                   <JsonField
+                    field={field}
+                    fieldApi={fieldApi}
+                  />
+                )
+              }
+
+              if (field.type === 'textarea') {
+                return (
+                  <TextareaField
                     field={field}
                     fieldApi={fieldApi}
                   />

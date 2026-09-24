@@ -54,10 +54,6 @@ function RootComponent() {
   // If not on login page and no user (should rely on useEffect redirect, but safe guard)
   if (!user) return null
 
-  if (schema) console.log('UI successfully fetched schema:', schema)
-  if (schemaLoading) console.log('Loading schema...')
-  if (error) console.error('Schema fetch error:', error.message)
-
   return (
     <>
       <div className="flex min-h-screen bg-linear-to-br from-[#050505] via-[#0a0a0a] to-[#0f1f3a]">

@@ -249,16 +249,5 @@ export function createDrizzleAdapter(options: {
 
 
 
-  // DEBUG: Log the generated schema for verification
-  console.log('--- Generated Admin Schema ---');
-  schemaJson.resources.forEach(r => {
-    console.log(`Resource: ${r.name}`);
-    r.fields.forEach(f => {
-      if (f.type === 'relationship') {
-        console.log(`  - Field: ${f.name} (type: ${f.type}, relationTo: ${f.relationTo})`);
-      }
-    });
-  });
-
   return { schemaJson, handlers };
 }
