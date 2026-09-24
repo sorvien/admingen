@@ -14,10 +14,12 @@
   "types": "dist/src/index.d.ts",
   "readme": "../../README.md",
   "repository": {
-  "type": "git",
-  "url": "https://github.com/sorvien/admingen.git",
-  "directory": "packages/types"
-},
+    "type": "git",
+    "url": "https://github.com/sorvien/admingen.git",
+    "directory": "packages/types"
+  },
+  "homepage": "https://github.com/sorvien/admingen",
+  "author": "Sorvien Group LLC <support@sorvien.com>",
   "exports": {
     ".": {
       "import": "./dist/src/index.js",
