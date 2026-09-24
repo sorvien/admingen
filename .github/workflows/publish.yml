@@ -1,6 +1,7 @@
 name: Publish Packages to NPM
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*" # Run this workflow when you create a new tag
