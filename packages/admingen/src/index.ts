@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
 import type { AdapterResult, AuthProvider } from '@sorvien/admingen-types';
+export * from '@sorvien/admingen-types';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
@@ -141,3 +142,6 @@ export const AdminGen = ({
 
     return app;
 };
+
+export const admingen = AdminGen;
+export default AdminGen;
