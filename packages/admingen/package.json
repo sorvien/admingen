@@ -1,5 +1,5 @@
 {
-  "name": "@blackwaves/admingen",
+  "name": "@sorvien/admingen",
   "version": "0.0.3",
   "private": false,
   "description": "Headless Admin Panel Framework for Elysia and Drizzle",
@@ -11,7 +11,7 @@
   ],
   "repository": {
   "type": "git",
-  "url": "https://github.com/blackwavesdev/admingen.git",
+  "url": "https://github.com/sorvien/admingen.git",
   "directory": "packages/admingen"
 },
   "license": "MIT",
@@ -35,7 +35,7 @@
 },
 "dependencies": {
   "@elysiajs/static": "1.2.0",
-  "@blackwaves/admingen-types": "workspace:*"
+  "@sorvien/admingen-types": "workspace:*"
 },
 "readme": "../../README.md",
   "peerDependencies": {

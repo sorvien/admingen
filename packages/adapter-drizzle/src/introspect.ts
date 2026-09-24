@@ -8,7 +8,7 @@ import type {
     AdminConfig,
     AdminResourceConfig,
     AdminField
-} from '@blackwaves/admingen-types';
+} from '@sorvien/admingen-types';
 
 export function introspectSchema(schema: Record<string, any>): AdminConfig {
     const resources: AdminResourceConfig[] = [];

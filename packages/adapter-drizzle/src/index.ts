@@ -7,7 +7,7 @@ import type {
   AdminSchema,
   AdminField,
   PaginatedResponse
-} from '@blackwaves/admingen-types';
+} from '@sorvien/admingen-types';
 import { introspectSchema } from './introspect';
 
 // Helper to sanitize data for JSON serialization (BigInt -> Number, Date -> ISOString)

@@ -3,8 +3,8 @@ import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
 import { cors } from '@elysiajs/cors';
 import { posts, users, postsRelations, usersRelations, teams, teamsRelations } from './schema';
-import { AdminGen } from '@blackwaves/admingen';
-import { createDrizzleAdapter } from '@blackwaves/admingen-adapter-drizzle';
+import { AdminGen } from '@sorvien/admingen';
+import { createDrizzleAdapter } from '@sorvien/admingen-adapter-drizzle';
 
 // 1. Initialize SQLite database & ensure schema tables exist
 const sqlite = new Database('sqlite.db');

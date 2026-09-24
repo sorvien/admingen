@@ -42,19 +42,19 @@ jobs:
         with:
           node-version: "20" # Use a standard Node.js version for npm
           registry-url: "https://registry.npmjs.org/" # Point to the public npm registry
-          scope: "@blackwaves" # Set your scope
+          scope: "@sorvien" # Set your scope
 
-      - name: Publish @blackwaves/admingen-types
+      - name: Publish @sorvien/admingen-types
         run: cd packages/types && npm publish --access public --tag beta
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @blackwaves/admingen-adapter-drizzle
+      - name: Publish @sorvien/admingen-adapter-drizzle
         run: cd packages/adapter-drizzle && npm publish --access public --tag beta
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @blackwaves/admingen
+      - name: Publish @sorvien/admingen
         run: cd packages/admingen && npm publish --access public --tag beta
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,5 +1,5 @@
 {
-  "name": "@blackwaves/admingen-ui",
+  "name": "@sorvien/admingen-ui",
   "private": true,
   "type": "module",
 "scripts": {
@@ -10,7 +10,7 @@
   },
   "readme": "../../README.md",
   "dependencies": {
-    "@blackwaves/admingen-types": "workspace:*",
+    "@sorvien/admingen-types": "workspace:*",
     "@faker-js/faker": "^10.0.0",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-select": "^2.2.6",

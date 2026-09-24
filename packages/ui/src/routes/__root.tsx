@@ -1,6 +1,6 @@
 import { createRootRoute, Link, Outlet, useNavigate, useLocation } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import type { AdminSchema } from '@blackwaves/admingen-types'
+import type { AdminSchema } from '@sorvien/admingen-types'
 import { Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'

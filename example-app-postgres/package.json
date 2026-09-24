@@ -11,8 +11,8 @@
     "drizzle-orm": "latest",
     "postgres": "latest",
     "@elysiajs/cors": "1.2.0",
-    "@blackwaves/admingen": "workspace:*",
-    "@blackwaves/admingen-adapter-drizzle": "workspace:*"
+    "@sorvien/admingen": "workspace:*",
+    "@sorvien/admingen-adapter-drizzle": "workspace:*"
   },
   "devDependencies": {
     "bun-types": "latest",

@@ -57,19 +57,19 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org/"
-          scope: "@blackwaves"
+          scope: "@sorvien"
 
-      - name: Publish @blackwaves/admingen-types@next
+      - name: Publish @sorvien/admingen-types@next
         run: cd packages/types && npm publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @blackwaves/admingen-adapter-drizzle@next
+      - name: Publish @sorvien/admingen-adapter-drizzle@next
         run: cd packages/adapter-drizzle && npm publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @blackwaves/admingen@next
+      - name: Publish @sorvien/admingen@next
         run: cd packages/admingen && npm publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

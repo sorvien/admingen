@@ -1,7 +1,7 @@
 # 🌊 AdminGen
 
-[![npm version](https://img.shields.io/npm/v/@blackwaves/admingen/beta.svg)](https://www.npmjs.com/package/@blackwaves/admingen)
-[![npm downloads](https://img.shields.io/npm/dw/@blackwaves/admingen.svg)](https://www.npmjs.com/package/@blackwaves/admingen)
+[![npm version](https://img.shields.io/npm/v/@sorvien/admingen/beta.svg)](https://www.npmjs.com/package/@sorvien/admingen)
+[![npm downloads](https://img.shields.io/npm/dw/@sorvien/admingen.svg)](https://www.npmjs.com/package/@sorvien/admingen)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sorvien/admingen/build.yml?branch=main)](https://github.com/sorvien/admingen/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Powered by Bun](https://img.shields.io/badge/Runtime-Bun-f472b6.svg)](https://bun.sh)
@@ -73,7 +73,7 @@ Log in with: **`admin`** / **`admin`**
 In your Elysia + Drizzle project, install AdminGen and the Drizzle adapter:
 
 ```bash
-bun add @blackwaves/admingen@beta @blackwaves/admingen-adapter-drizzle@beta
+bun add @sorvien/admingen@beta @sorvien/admingen-adapter-drizzle@beta
 ```
 
 Ensure peer dependencies are installed:
@@ -91,8 +91,8 @@ import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
 import * as schema from './schema'; // Your Drizzle schema
 
-import { AdminGen } from '@blackwaves/admingen';
-import { createDrizzleAdapter } from '@blackwaves/admingen-adapter-drizzle';
+import { AdminGen } from '@sorvien/admingen';
+import { createDrizzleAdapter } from '@sorvien/admingen-adapter-drizzle';
 
 // 1. Initialize Drizzle with your schema
 const db = drizzle(new Database('sqlite.db'), { schema });
@@ -195,4 +195,4 @@ Please read our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE
 
 ## 📜 License
 
-MIT License © 2025 [Sorvien Group LLC](https://sorvien.com) & [Black Waves](https://github.com/blackwavesdev).
+MIT License © 2025 [Sorvien Group LLC](https://sorvien.com).

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { AuthUser } from '@blackwaves/admingen-types';
+import type { AuthUser } from '@sorvien/admingen-types';
 
 interface AuthContextType {
   user: AuthUser | null;

@@ -4,8 +4,8 @@ import postgres from 'postgres';
 import { cors } from '@elysiajs/cors';
 import * as schema from './schema';
 
-import { AdminGen } from '@blackwaves/admingen';
-import { createDrizzleAdapter } from '@blackwaves/admingen-adapter-drizzle';
+import { AdminGen } from '@sorvien/admingen';
+import { createDrizzleAdapter } from '@sorvien/admingen-adapter-drizzle';
 
 const connectionString = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/admingen_advanced';
 const client = postgres(connectionString);

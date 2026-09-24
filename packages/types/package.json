@@ -1,5 +1,5 @@
 {
-  "name": "@blackwaves/admingen-types",
+  "name": "@sorvien/admingen-types",
   "version": "0.0.3",
   "private": false,
   "description": "Types for AdminGen",
@@ -15,7 +15,7 @@
   "readme": "../../README.md",
   "repository": {
   "type": "git",
-  "url": "https://github.com/blackwavesdev/admingen.git",
+  "url": "https://github.com/sorvien/admingen.git",
   "directory": "packages/types"
 },
   "exports": {

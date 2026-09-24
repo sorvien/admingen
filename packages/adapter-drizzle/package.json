@@ -1,5 +1,5 @@
 {
-  "name": "@blackwaves/admingen-adapter-drizzle",
+  "name": "@sorvien/admingen-adapter-drizzle",
   "version": "0.0.3",
   "private": false,
   "description": "Drizzle adapter for AdminGen",
@@ -10,7 +10,7 @@
   ],
   "repository": {
   "type": "git",
-  "url": "https://github.com/blackwavesdev/admingen.git",
+  "url": "https://github.com/sorvien/admingen.git",
   "directory": "packages/adapter-drizzle"
 },
   "license": "MIT",
@@ -30,7 +30,7 @@
     "dev": "tsc -p tsconfig.json --watch"
   },
  "dependencies": {
-  "@blackwaves/admingen-types": "workspace:*"
+  "@sorvien/admingen-types": "workspace:*"
 },
 "readme": "../../README.md",
   "peerDependencies": {

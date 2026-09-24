@@ -2,7 +2,7 @@ import React from 'react'
 import { createFileRoute, useParams, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from '@tanstack/react-form'
-import type { AdminSchema, AdminField } from '@blackwaves/admingen-types'
+import type { AdminSchema, AdminField } from '@sorvien/admingen-types'
 
 // --- Shadcn Components ---
 import { Input } from '@/components/ui/input'

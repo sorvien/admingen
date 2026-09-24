@@ -22,7 +22,7 @@ import {
   rankItem,
   type RankingInfo,
 } from '@tanstack/match-sorter-utils'
-import type { AdminField, AdminSchema, PaginatedResponse } from '@blackwaves/admingen-types'
+import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 

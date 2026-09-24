@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import type { AdapterResult, AuthProvider } from '@blackwaves/admingen-types';
+import type { AdapterResult, AuthProvider } from '@sorvien/admingen-types';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
