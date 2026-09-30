@@ -1,9 +1,10 @@
 import { createRootRoute, Link, Outlet, useNavigate, useLocation } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import type { AdminSchema } from '@sorvien/admingen-types'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Search, Command } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { CommandPalette } from '../components/CommandPalette'
 
 const fetchAdminSchema = async (): Promise<AdminSchema> => {
   const res = await fetch('/admin/api/_schema', {
@@ -21,6 +22,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false)
   const { user, isLoading: authLoading, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -35,6 +37,18 @@ function RootComponent() {
     // Don't fetch schema if not authenticated, to avoid 401s on schema endpoint
     enabled: !!user 
   })
+
+  // Global Cmd+K / Ctrl+K keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsPaletteOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -56,6 +70,13 @@ function RootComponent() {
 
   return (
     <>
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        schema={schema}
+        onLogout={logout}
+      />
+
       <div className="flex min-h-screen bg-linear-to-br from-[#050505] via-[#0a0a0a] to-[#0f1f3a]">
         {/* Mobile Menu Button */}
         <button
@@ -78,7 +99,7 @@ function RootComponent() {
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <Link to="/" className="font-bold text-lg">
               Admin Dashboard
             </Link>
@@ -91,6 +112,20 @@ function RootComponent() {
               <X className="cursor-pointer" size={20} />
             </button>
           </div>
+
+          {/* Quick Search / Command Palette trigger button */}
+          <button
+            onClick={() => setIsPaletteOpen(true)}
+            className="flex items-center justify-between w-full px-3 py-2 mb-4 text-xs font-medium text-gray-400 bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 rounded-lg transition-colors cursor-pointer group"
+          >
+            <span className="flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 text-gray-400 group-hover:text-cyan-400 transition-colors" />
+              Quick search...
+            </span>
+            <kbd className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-gray-400 bg-white/5 border border-white/10 rounded">
+              ⌘K
+            </kbd>
+          </button>
 
           <nav className="flex flex-col gap-2">
             {schemaLoading && <div className="text-sm">Loading...</div>}
