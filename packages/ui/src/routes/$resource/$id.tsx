@@ -1,8 +1,9 @@
 import React from 'react'
-import { createFileRoute, useParams, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useParams, useNavigate, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from '@tanstack/react-form'
 import type { AdminSchema, AdminField } from '@sorvien/admingen-types'
+import { ChevronRight } from 'lucide-react'
 
 // --- Shadcn Components ---
 import { Input } from '@/components/ui/input'
@@ -338,6 +339,22 @@ function EditComponent() {
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-6 text-white">
+      <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-gray-400 mb-6">
+        <Link to="/" className="hover:text-gray-200 transition-colors">
+          Home
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+        <Link
+          to="/$resource"
+          params={{ resource: resourceName }}
+          className="hover:text-gray-200 transition-colors capitalize"
+        >
+          {resource.label}
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+        <span className="text-gray-200 font-medium">Edit #{id}</span>
+      </nav>
+
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold capitalize text-white flex items-center gap-3">
           <span>Edit {resource.label}</span>
