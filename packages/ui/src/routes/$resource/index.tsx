@@ -1,6 +1,6 @@
 import React from 'react'
 import { createFileRoute, useParams } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   flexRender,
   getCoreRowModel,
@@ -68,6 +68,7 @@ export const Route = createFileRoute('/$resource/')({
 
 function ResourceListComponent() {
   const { resource: resourceName } = useParams({ from: '/$resource/' })
+  const queryClient = useQueryClient()
   
   // Table State
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -164,7 +165,7 @@ function ResourceListComponent() {
                       credentials: 'include'
                     });
                     if (!res.ok) throw new Error('Failed to delete');
-                    window.location.reload(); 
+                    await queryClient.invalidateQueries({ queryKey: ['resourceData', resourceName] });
                   } catch (e) {
                     alert('Error deleting item');
                   }
@@ -180,7 +181,7 @@ function ResourceListComponent() {
     };
 
     return [...cols, actionsColumn];
-  }, [resource, resourceName])
+  }, [resource, resourceName, queryClient])
 
   const table = useReactTable({
     data: paginatedData?.data ?? [],
