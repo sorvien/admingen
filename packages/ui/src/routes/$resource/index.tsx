@@ -26,6 +26,7 @@ import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/adming
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
+import { CopyButton } from '@/components/CopyButton'
 import { exportToCsv, exportToJson } from '@/lib/utils'
 
 // ... (keep fuzzyFilter and fuzzySort if needed for local fallback, but we'll use server-side)
@@ -132,9 +133,25 @@ function ResourceListComponent() {
           const val = info.getValue();
           if (val === null || val === undefined || val === '') return '-';
           if (typeof val === 'boolean') return val ? 'Yes' : 'No';
-          if (typeof val === 'object') {
+
+          if (field.name === 'id') {
+            return (
+              <div className="flex items-center gap-1.5 font-mono text-xs">
+                <span>{String(val)}</span>
+                <CopyButton text={String(val)} />
+              </div>
+            );
+          }
+
+          if (field.type === 'json' || typeof val === 'object') {
             try {
-              return JSON.stringify(val);
+              const str = JSON.stringify(val);
+              return (
+                <div className="flex items-center gap-1.5 max-w-xs font-mono text-xs">
+                  <span className="truncate text-gray-300" title={str}>{str}</span>
+                  <CopyButton text={str} />
+                </div>
+              );
             } catch (e) {
               return '[Complex Object]';
             }
