@@ -25,7 +25,7 @@ import {
 import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
+import { Download, FolderPlus, FilterX, Plus } from 'lucide-react'
 import { exportToCsv, exportToJson } from '@/lib/utils'
 
 // ... (keep fuzzyFilter and fuzzySort if needed for local fallback, but we'll use server-side)
@@ -364,26 +364,49 @@ function ResourceListComponent() {
                     <tr>
                       <td
                         colSpan={columns.length}
-                        className="h-28 text-center text-gray-400"
+                        className="py-12 px-4 text-center text-gray-400"
                       >
-                        <div className="flex flex-col items-center gap-2">
-                          <svg
-                            className="w-12 h-12 text-gray-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M9 12l2 2 4-4m1-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            ></path>
-                          </svg>
-                          <div className="text-sm">No records found.</div>
-                        </div>
+                        {columnFilters.length > 0 ? (
+                          <div className="flex flex-col items-center justify-center gap-3 max-w-sm mx-auto">
+                            <div className="w-12 h-12 rounded-full bg-gray-800/80 border border-gray-700 flex items-center justify-center text-gray-400">
+                              <FilterX className="w-6 h-6 text-gray-400" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="text-base font-medium text-gray-200">No matching results found</div>
+                              <p className="text-xs text-gray-400">
+                                No records match the active filter criteria. Try clearing filters to see all records.
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setColumnFilters([])}
+                              className="mt-1 border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-200 cursor-pointer"
+                            >
+                              Clear Filters
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-3 max-w-sm mx-auto">
+                            <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                              <FolderPlus className="w-6 h-6" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="text-base font-medium text-gray-200">
+                                No {resource?.label ?? 'records'} found
+                              </div>
+                              <p className="text-xs text-gray-400">
+                                Get started by adding your first {resource?.label?.toLowerCase() ?? 'record'} to the database.
+                              </p>
+                            </div>
+                            <Link to="/$resource/create" params={{ resource: resourceName }}>
+                              <Button size="sm" className="mt-1 gap-1.5 cursor-pointer">
+                                <Plus className="w-4 h-4" />
+                                <span>Create {resource?.label ?? 'Record'}</span>
+                              </Button>
+                            </Link>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )}
