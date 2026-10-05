@@ -127,12 +127,27 @@ function ResourceListComponent() {
         ...baseColumn,
         cell: (info: any) => {
           const val = info.getValue();
+          if (val === null || val === undefined || val === '') return '-';
           if (typeof val === 'boolean') return val ? 'Yes' : 'No';
-          if (val && typeof val === 'object') {
+          if (typeof val === 'object') {
             try {
               return JSON.stringify(val);
             } catch (e) {
               return '[Complex Object]';
+            }
+          }
+          if (field.type === 'date' || (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(val))) {
+            const dateObj = new Date(val);
+            if (!isNaN(dateObj.getTime())) {
+              const formatted = new Intl.DateTimeFormat(undefined, {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              }).format(dateObj);
+              return (
+                <span title={String(val)} className="cursor-help underline decoration-dotted decoration-gray-500 underline-offset-2">
+                  {formatted}
+                </span>
+              );
             }
           }
           return val;
