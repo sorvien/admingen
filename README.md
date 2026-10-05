@@ -149,7 +149,8 @@ admingen/
 │   ├── adapter-drizzle/  # Drizzle schema introspection engine & CRUD handlers
 │   ├── ui/               # SPA Admin Panel (TanStack Router + Query + Table + Shadcn)
 │   └── admingen/         # Main Elysia plugin serving APIs & bundled SPA assets
-└── example-app/          # Fully functional SQLite demo application
+├── example-app/          # Fully functional SQLite demo application
+└── example-app-postgres/ # Advanced PostgreSQL demo application with Docker Compose
 ```
 
 ---
