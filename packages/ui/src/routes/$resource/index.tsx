@@ -25,6 +25,8 @@ import {
 import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { Download } from 'lucide-react'
+import { exportToCsv, exportToJson } from '@/lib/utils'
 
 // ... (keep fuzzyFilter and fuzzySort if needed for local fallback, but we'll use server-side)
 
@@ -232,7 +234,7 @@ function ResourceListComponent() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link to="/$resource/create" params={{ resource: resourceName }}>
                 <Button className="cursor-pointer transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400">
                   Create
@@ -241,20 +243,27 @@ function ResourceListComponent() {
 
               <button
                 type="button"
-                className="cursor-pointer px-3 py-2 bg-gray-800 text-sm text-gray-200 rounded-md hover:bg-gray-700/90 active:scale-95 transform transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="cursor-pointer px-3 py-2 bg-gray-800 text-sm text-gray-200 rounded-md hover:bg-gray-700/90 active:scale-95 transform transition focus:outline-none focus:ring-2 focus:ring-blue-400 inline-flex items-center gap-1.5"
                 onClick={() => {
-                  const payload = JSON.stringify(paginatedData?.data ?? [], null, 2)
-                  const blob = new Blob([payload], { type: 'application/json' })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `${resourceName}-export.json`
-                  a.click()
-                  URL.revokeObjectURL(url)
+                  exportToCsv(`${resourceName}-export.csv`, paginatedData?.data ?? [])
                 }}
-                aria-label={`Export ${resource.label}`}
+                aria-label={`Export ${resource.label} to CSV`}
+                title="Export current page as CSV"
               >
-                Export
+                <Download className="w-4 h-4 text-gray-400" />
+                <span>Export CSV</span>
+              </button>
+
+              <button
+                type="button"
+                className="cursor-pointer px-3 py-2 bg-gray-800 text-sm text-gray-200 rounded-md hover:bg-gray-700/90 active:scale-95 transform transition focus:outline-none focus:ring-2 focus:ring-blue-400 inline-flex items-center gap-1.5"
+                onClick={() => {
+                  exportToJson(`${resourceName}-export.json`, paginatedData?.data ?? [])
+                }}
+                aria-label={`Export ${resource.label} to JSON`}
+                title="Export current page as JSON"
+              >
+                <span>Export JSON</span>
               </button>
             </div>
           </header>
