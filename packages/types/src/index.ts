@@ -4,7 +4,7 @@
 export interface AdminField {
   name: string;
   label?: string;
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'relationship' | 'select' | 'json';
+  type: 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'relationship' | 'select' | 'json' | 'password';
   isId?: boolean;
   required?: boolean;
   readOnly?: boolean;

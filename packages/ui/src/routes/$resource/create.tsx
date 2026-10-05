@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { PasswordField } from '@/components/PasswordField'
 import {
   Select,
   SelectContent,
@@ -331,6 +332,15 @@ function CreateComponent() {
               if (field.type === 'select') {
                 return (
                   <SelectField
+                    field={field}
+                    fieldApi={fieldApi}
+                  />
+                )
+              }
+
+              if (field.type === 'password') {
+                return (
+                  <PasswordField
                     field={field}
                     fieldApi={fieldApi}
                   />
