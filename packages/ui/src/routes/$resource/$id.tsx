@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { PasswordField } from '@/components/PasswordField'
+import { CopyButton } from '@/components/CopyButton'
 import {
   Select,
   SelectContent,
@@ -183,9 +184,14 @@ function JsonField({
 
   return (
     <div className="flex flex-col gap-2 text-white">
-      <Label htmlFor={fieldApi.name} className="capitalize text-white">
-        {field.label} {field.required && <span className="text-red-500">*</span>}
-      </Label>
+      <div className="flex items-center justify-between">
+        <Label htmlFor={fieldApi.name} className="capitalize text-white">
+          {field.label} {field.required && <span className="text-red-500">*</span>}
+        </Label>
+        {localValue && (
+          <CopyButton text={localValue} label="Copy JSON" />
+        )}
+      </div>
       <textarea
         id={fieldApi.name}
         name={fieldApi.name}
@@ -332,9 +338,15 @@ function EditComponent() {
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-6 text-white">
-      <h1 className="text-3xl font-bold mb-8 capitalize text-white">
-        Edit {resource.label}
-      </h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold capitalize text-white flex items-center gap-3">
+          <span>Edit {resource.label}</span>
+          <span className="text-xs font-mono font-normal text-gray-400 bg-gray-800/80 px-2.5 py-1 rounded border border-gray-700 flex items-center gap-1.5">
+            <span>#{id}</span>
+            <CopyButton text={String(id)} />
+          </span>
+        </h1>
+      </div>
 
       <form
         onSubmit={(e) => {

@@ -25,6 +25,7 @@ import {
 import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { CopyButton } from '@/components/CopyButton'
 import { Download, FolderPlus, FilterX, Plus } from 'lucide-react'
 import { exportToCsv, exportToJson } from '@/lib/utils'
 
@@ -139,9 +140,25 @@ function ResourceListComponent() {
             );
           }
           if (typeof val === 'boolean') return val ? 'Yes' : 'No';
-          if (typeof val === 'object') {
+
+          if (field.name === 'id') {
+            return (
+              <div className="flex items-center gap-1.5 font-mono text-xs">
+                <span>{String(val)}</span>
+                <CopyButton text={String(val)} />
+              </div>
+            );
+          }
+
+          if (field.type === 'json' || typeof val === 'object') {
             try {
-              return JSON.stringify(val);
+              const str = JSON.stringify(val);
+              return (
+                <div className="flex items-center gap-1.5 max-w-xs font-mono text-xs">
+                  <span className="truncate text-gray-300" title={str}>{str}</span>
+                  <CopyButton text={str} />
+                </div>
+              );
             } catch (e) {
               return '[Complex Object]';
             }
