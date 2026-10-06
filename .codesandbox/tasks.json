@@ -1,0 +1,14 @@
+{
+  "$schema": "https://codesandbox.io/schemas/tasks.json",
+  "setupTasks": ["bun install", "bun run --bun build"],
+  "tasks": {
+    "example-app": {
+      "name": "AdminGen Example",
+      "command": "bun run dev",
+      "runAtStart": true,
+      "preview": {
+        "port": 3000
+      }
+    }
+  }
+}
