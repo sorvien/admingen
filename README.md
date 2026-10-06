@@ -53,8 +53,8 @@ AdminGen was engineered from day one on **Bun + Elysia + Drizzle** to be the fas
 
 [![Open in CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/devbox/github/sorvien/admingen/tree/main)
 
-No local installation needed: open the CodeSandbox template, fork it to run your own
-VM Sandbox, and wait for the workspace dependencies and packages to build. The
+No local installation needed: open the CodeSandbox template and wait for the
+workspace dependencies and packages to build. The
 `example-app` starts automatically on port **3000**, with a pre-seeded SQLite database.
 In the port 3000 preview, open **`/admin`** and log in with **`admin`** / **`admin`**.
 CodeSandbox may require you to sign in; VM usage is subject to your account's limits.
