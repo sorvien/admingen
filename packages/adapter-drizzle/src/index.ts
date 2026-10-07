@@ -175,10 +175,24 @@ export function createDrizzleAdapter(options: {
           if (table[col]) {
             const column = table[col];
             const dType = (column as any).dataType || (column as any).columnType;
-            if (['text', 'string', 'varchar'].includes(dType)) {
+            const field = resourceConfig.fields.find(field => field.name === col);
+            let filterValue: string | number | boolean = val;
+
+            if (field?.type === 'boolean') {
+              if (val === 'true') filterValue = true;
+              if (val === 'false') filterValue = false;
+            } else if (field?.type === 'number') {
+              const numberValue = Number(val);
+              if (!Number.isNaN(numberValue)) filterValue = numberValue;
+            } else if (field?.type === 'select' && field.options) {
+              const option = field.options.find(option => String(option.value) === val);
+              if (option) filterValue = option.value;
+            }
+
+            if (field?.type !== 'select' && ['text', 'string', 'varchar'].includes(dType)) {
               where = like(column, `%${val}%`);
             } else {
-              where = eq(column, val);
+              where = eq(column, filterValue);
             }
           }
         }

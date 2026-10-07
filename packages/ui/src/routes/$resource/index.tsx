@@ -25,11 +25,26 @@ import {
 import { Download, FilterX, FolderPlus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import type {RankingInfo} from '@tanstack/match-sorter-utils';
-import type {Column, ColumnDef, ColumnFiltersState, FilterFn, PaginationState, SortingFn, SortingState} from '@tanstack/react-table';
+import type {Column, ColumnDef, ColumnFiltersState, FilterFn, PaginationState, RowData, SortingFn, SortingState} from '@tanstack/react-table';
 import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { CopyButton } from '@/components/CopyButton'
 import { exportToCsv, exportToJson } from '@/lib/utils'
+
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    field?: AdminField
+  }
+}
+
+const ALL_FILTER_VALUE = '__all__'
 
 // ... (keep fuzzyFilter and fuzzySort if needed for local fallback, but we'll use server-side)
 
@@ -107,6 +122,7 @@ function ResourceListComponent() {
       const baseColumn = {
         accessorKey: field.name,
         header: () => <span>{field.label}</span>,
+        meta: { field },
       };
 
       // Handle relationship fields
@@ -558,6 +574,65 @@ function ResourceListComponent() {
 
 function Filter({ column }: { column: Column<any, unknown> }) {
   const columnFilterValue = column.getFilterValue()
+  const field = column.columnDef.meta?.field
+
+  if (field?.type === 'boolean') {
+    return (
+      <Select
+        value={columnFilterValue === undefined ? ALL_FILTER_VALUE : String(columnFilterValue)}
+        onValueChange={(value) =>
+          column.setFilterValue(value === ALL_FILTER_VALUE ? undefined : value === 'true')
+        }
+      >
+        <SelectTrigger
+          size="sm"
+          className="w-full bg-gray-800 text-gray-100 border-gray-700"
+          aria-label={`Filter ${field.label || field.name}`}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_FILTER_VALUE}>All</SelectItem>
+          <SelectItem value="true">Yes</SelectItem>
+          <SelectItem value="false">No</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  if (field?.type === 'select' || field?.options?.length) {
+    return (
+      <Select
+        value={columnFilterValue === undefined ? ALL_FILTER_VALUE : String(columnFilterValue)}
+        onValueChange={(value) => {
+          if (value === ALL_FILTER_VALUE) {
+            column.setFilterValue(undefined)
+            return
+          }
+
+          const option = field.options?.find((item) => String(item.value) === value)
+          column.setFilterValue(option?.value ?? value)
+        }}
+      >
+        <SelectTrigger
+          size="sm"
+          className="w-full bg-gray-800 text-gray-100 border-gray-700"
+          aria-label={`Filter ${field.label || field.name}`}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_FILTER_VALUE}>All</SelectItem>
+          {field.options?.map((option) => (
+            <SelectItem key={String(option.value)} value={String(option.value)}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
+
   return (
     <DebouncedInput
       type="text"

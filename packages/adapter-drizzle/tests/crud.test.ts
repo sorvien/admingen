@@ -231,4 +231,68 @@ describe('AdminGen CRUD Handlers', () => {
       adapter.handlers.create('posts')({ db, body: { title: 'Invalid' } })
     ).rejects.toThrow("beforeChange hook for 'posts' must return a record object");
   });
+
+  it('should filter boolean columns using query-string values', async () => {
+    const flags = sqliteTable('flags', {
+      id: integer('id').primaryKey({ autoIncrement: true }),
+      enabled: integer('enabled', { mode: 'boolean' }).notNull(),
+    });
+
+    const sqlite = new Database(':memory:');
+    sqlite.run('CREATE TABLE flags (id INTEGER PRIMARY KEY AUTOINCREMENT, enabled INTEGER NOT NULL)');
+    const flagDb = drizzle(sqlite, { schema: { flags } });
+    const flagAdapter = createDrizzleAdapter({ schema: { flags } });
+
+    await flagAdapter.handlers.create('flags')({ db: flagDb, body: { enabled: true } });
+    await flagAdapter.handlers.create('flags')({ db: flagDb, body: { enabled: false } });
+
+    const result = await flagAdapter.handlers.findMany('flags')({
+      db: flagDb,
+      query: { filter: 'enabled:false' },
+    }) as any;
+
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].enabled).toBe(false);
+  });
+
+  it('should use exact matching for select filters', async () => {
+    const statuses = sqliteTable('statuses', {
+      id: integer('id').primaryKey({ autoIncrement: true }),
+      status: text('status').notNull(),
+    });
+
+    const sqlite = new Database(':memory:');
+    sqlite.run('CREATE TABLE statuses (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT NOT NULL)');
+    const statusDb = drizzle(sqlite, { schema: { statuses } });
+    const statusAdapter = createDrizzleAdapter({
+      schema: { statuses },
+      config: {
+        resources: [{
+          slug: 'statuses',
+          fields: [
+            { name: 'id', type: 'number', isId: true },
+            {
+              name: 'status',
+              type: 'select',
+              options: [
+                { label: 'Draft', value: 'draft' },
+                { label: 'Published', value: 'published' },
+              ],
+            },
+          ],
+        }],
+      },
+    });
+
+    await statusAdapter.handlers.create('statuses')({ db: statusDb, body: { status: 'draft' } });
+    await statusAdapter.handlers.create('statuses')({ db: statusDb, body: { status: 'draft-old' } });
+
+    const result = await statusAdapter.handlers.findMany('statuses')({
+      db: statusDb,
+      query: { filter: 'status:draft' },
+    }) as any;
+
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].status).toBe('draft');
+  });
 });
