@@ -6,6 +6,12 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { resolve, join, dirname } from 'path';
 import { getSqliteFiles } from './templates/sqlite';
 import { getPostgresFiles } from './templates/postgres';
+import {
+  detectPackageManager,
+  getPackageManagerCommands,
+  packageManagerFromFlags,
+  type PackageManager,
+} from './package-manager';
 
 async function main() {
   const rawArgs = process.argv.slice(2);
@@ -13,6 +19,9 @@ async function main() {
   const nonFlagArgs = rawArgs.filter((arg) => !arg.startsWith('-'));
 
   const isNonInteractive = flags.has('-y') || flags.has('--yes') || flags.has('--sqlite') || flags.has('--postgres');
+  const packageManagerFlag = packageManagerFromFlags(flags);
+  const detectedPackageManager = detectPackageManager(process.env.npm_config_user_agent);
+  let packageManager: PackageManager | undefined = packageManagerFlag ?? detectedPackageManager;
   let targetDir = nonFlagArgs[0];
 
   if (!isNonInteractive) {
@@ -87,7 +96,29 @@ async function main() {
     database = dbChoice as string;
   }
 
-  // 3. Demo Data
+  // 3. Select Package Manager
+  if (!packageManagerFlag && !isNonInteractive) {
+    const packageManagerChoice = await select({
+      message: 'Select your package manager:',
+      initialValue: packageManager ?? 'bun',
+      options: [
+        { value: 'bun', label: 'Bun (Recommended)' },
+        { value: 'pnpm', label: 'pnpm' },
+        { value: 'npm', label: 'npm' },
+      ],
+    });
+
+    if (isCancel(packageManagerChoice)) {
+      cancel('Operation cancelled.');
+      process.exit(0);
+    }
+    packageManager = packageManagerChoice as PackageManager;
+  }
+
+  packageManager ??= 'bun';
+  const packageCommands = getPackageManagerCommands(packageManager);
+
+  // 4. Demo Data
   let includeSeed = !flags.has('--no-seed');
   if (database === 'sqlite' && !isNonInteractive && !flags.has('--seed')) {
     const seedChoice = await confirm({
@@ -102,13 +133,13 @@ async function main() {
     includeSeed = seedChoice;
   }
 
-  // 4. Scaffold Files
+  // 5. Scaffold Files
   const s = spinner();
   s.start(`Scaffolding project in ${pc.cyan(targetDir)}...`);
 
   const files = database === 'sqlite'
-    ? getSqliteFiles(projectName, includeSeed)
-    : getPostgresFiles(projectName, includeSeed);
+    ? getSqliteFiles(projectName, includeSeed, packageManager)
+    : getPostgresFiles(projectName, includeSeed, packageManager);
 
   for (const [relativePath, content] of Object.entries(files)) {
     const filePath = join(projectPath, relativePath);
@@ -121,12 +152,12 @@ async function main() {
 
   s.stop(`Project scaffolded successfully!`);
 
-  // 5. Next Steps
+  // 6. Next Steps
   const nextSteps = [
     `cd ${targetDir}`,
-    database === 'postgres' ? `bun run docker:up  ${pc.dim('# start local postgres')}` : null,
-    `bun install`,
-    `bun dev`,
+    database === 'postgres' ? `${packageCommands.run('docker:up')}  ${pc.dim('# start local postgres')}` : null,
+    packageCommands.install,
+    packageCommands.dev,
   ].filter(Boolean);
 
   console.log();

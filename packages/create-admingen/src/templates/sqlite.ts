@@ -1,4 +1,7 @@
-export function getSqliteFiles(projectName: string, includeSeed: boolean): Record<string, string> {
+import { getPackageManagerCommands, type PackageManager } from '../package-manager';
+
+export function getSqliteFiles(projectName: string, includeSeed: boolean, packageManager: PackageManager = 'bun'): Record<string, string> {
+  const packageCommands = getPackageManagerCommands(packageManager);
   const packageJson = {
     name: projectName,
     version: '1.0.0',
@@ -195,10 +198,10 @@ Built with **[AdminGen](https://github.com/sorvien/admingen)**, **[ElysiaJS](htt
 
 \`\`\`bash
 # 1. Install dependencies
-bun install
+${packageCommands.install}
 
 # 2. Run dev server
-bun dev
+${packageCommands.dev}
 \`\`\`
 
 Open **[http://localhost:3000/admin](http://localhost:3000/admin)** in your browser.  

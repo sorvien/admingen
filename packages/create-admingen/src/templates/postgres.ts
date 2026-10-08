@@ -1,4 +1,7 @@
-export function getPostgresFiles(projectName: string, _includeSeed: boolean): Record<string, string> {
+import { getPackageManagerCommands, type PackageManager } from '../package-manager';
+
+export function getPostgresFiles(projectName: string, _includeSeed: boolean, packageManager: PackageManager = 'bun'): Record<string, string> {
+  const packageCommands = getPackageManagerCommands(packageManager);
   const packageJson = {
     name: projectName,
     version: '1.0.0',
@@ -162,11 +165,11 @@ Built with **[AdminGen](https://github.com/sorvien/admingen)**, **[ElysiaJS](htt
 
 \`\`\`bash
 # 1. Start Postgres with Docker
-bun run docker:up
+${packageCommands.run('docker:up')}
 
 # 2. Install dependencies & run dev
-bun install
-bun dev
+${packageCommands.install}
+${packageCommands.dev}
 \`\`\`
 
 Open **[http://localhost:3000/admin](http://localhost:3000/admin)** in your browser.  
