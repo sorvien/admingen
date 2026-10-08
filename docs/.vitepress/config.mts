@@ -1,11 +1,15 @@
 import { defineConfig } from 'vitepress';
 
+const base = process.env.GITHUB_ACTIONS ? '/admingen/' : '/';
+
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/admingen/' : '/',
+  base,
   title: 'AdminGen',
   description: 'Instant, headless admin panel for Elysia and Drizzle ORM',
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` }],
+    ['link', { rel: 'alternate icon', type: 'image/png', href: `${base}favicon.png` }],
+    ['link', { rel: 'shortcut icon', href: `${base}favicon.ico` }],
     ['meta', { name: 'theme-color', content: '#6366f1' }],
   ],
   themeConfig: {
