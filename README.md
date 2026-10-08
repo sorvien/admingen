@@ -1,15 +1,26 @@
-# 🌊 AdminGen
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sorvien/admingen/main/docs/public/logo.svg" alt="AdminGen Logo" width="88" height="88" />
+</p>
 
-[![npm version](https://img.shields.io/npm/v/@sorvien/admingen/beta.svg)](https://www.npmjs.com/package/@sorvien/admingen)
-[![npm downloads](https://img.shields.io/npm/dw/@sorvien/admingen.svg)](https://www.npmjs.com/package/@sorvien/admingen)
-[![Docs](https://img.shields.io/badge/Docs-VitePress-6366f1.svg)](https://sorvien.github.io/admingen/)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sorvien/admingen/build.yml?branch=main)](https://github.com/sorvien/admingen/actions)
-[![Good First Issues](https://img.shields.io/github/issues/sorvien/admingen/good%20first%20issue?color=7057ff&label=Good%20First%20Issues)](https://github.com/sorvien/admingen/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Powered by Bun](https://img.shields.io/badge/Runtime-Bun-f472b6.svg)](https://bun.sh)
-[![Backend: Elysia](https://img.shields.io/badge/Backend-ElysiaJS-9333ea.svg)](https://elysiajs.com)
-[![ORM: Drizzle](https://img.shields.io/badge/ORM-Drizzle-c084fc.svg)](https://orm.drizzle.team)
+<h1 align="center">AdminGen</h1>
+
+<p align="center">
+  <strong>Instant, headless admin panel framework for modern TypeScript backends</strong><br />
+  Built natively for <a href="https://elysiajs.com">ElysiaJS</a> and <a href="https://orm.drizzle.team">Drizzle ORM</a> • Powered by <a href="https://bun.sh">Bun</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@sorvien/admingen"><img src="https://img.shields.io/npm/v/@sorvien/admingen/beta.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@sorvien/admingen"><img src="https://img.shields.io/npm/dw/@sorvien/admingen.svg" alt="npm downloads" /></a>
+  <a href="https://sorvien.github.io/admingen/"><img src="https://img.shields.io/badge/Docs-VitePress-6366f1.svg" alt="Docs" /></a>
+  <a href="https://github.com/sorvien/admingen/actions"><img src="https://img.shields.io/github/actions/workflow/status/sorvien/admingen/build.yml?branch=main" alt="GitHub Workflow Status" /></a>
+  <a href="https://github.com/sorvien/admingen/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/sorvien/admingen/good%20first%20issue?color=7057ff&label=Good%20First%20Issues" alt="Good First Issues" /></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/Runtime-Bun-f472b6.svg" alt="Powered by Bun" /></a>
+  <a href="https://elysiajs.com"><img src="https://img.shields.io/badge/Backend-ElysiaJS-9333ea.svg" alt="Backend: Elysia" /></a>
+  <a href="https://orm.drizzle.team"><img src="https://img.shields.io/badge/ORM-Drizzle-c084fc.svg" alt="ORM: Drizzle" /></a>
+</p>
 
 **AdminGen** is an instant, ultra-lightweight admin panel framework for modern TypeScript backends, built natively for **[ElysiaJS](https://elysiajs.com)** and **[Drizzle ORM](https://orm.drizzle.team)**.
 

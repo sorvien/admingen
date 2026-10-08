@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { Logo } from '@/components/Logo';
 
 export const Route = createFileRoute('/login')({
   component: LoginComponent,
@@ -62,7 +63,9 @@ function LoginComponent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
       <div className="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-        <h1 className="text-2xl font-bold mb-6 text-center text-[#00eaff]">Admin Login</h1>
+        <div className="flex justify-center mb-6">
+          <Logo size={44} showText={true} />
+        </div>
         
         {error && (
           <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm">

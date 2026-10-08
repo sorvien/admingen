@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdminGen — Creative Brand Identity & Logo Gallery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              cyan: '#00eaff',
+              blue: '#3b82f6',
+              indigo: '#6366f1',
+              violet: '#8b5cf6',
+              purple: '#a855f7',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .glow-cyan { filter: drop-shadow(0 0 28px rgba(0, 234, 255, 0.45)); }
+    .glow-indigo { filter: drop-shadow(0 0 28px rgba(99, 102, 241, 0.45)); }
+    .glow-violet { filter: drop-shadow(0 0 28px rgba(139, 92, 246, 0.45)); }
+    .glow-emerald { filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.45)); }
+    .glow-rose { filter: drop-shadow(0 0 28px rgba(244, 63, 94, 0.45)); }
+    .glow-amber { filter: drop-shadow(0 0 28px rgba(245, 158, 11, 0.45)); }
+    .glow-fuchsia { filter: drop-shadow(0 0 28px rgba(217, 70, 239, 0.45)); }
+
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-6px);
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8 selection:bg-cyan-500 selection:text-black">
+
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto text-center mb-14">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-cyan-950/80 via-purple-950/80 to-pink-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono uppercase tracking-widest mb-4 shadow-lg">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> Beyond The Generic • Creative Direction Showcase
+    </div>
+    <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-indigo-300">
+      AdminGen Identity Lab
+    </h1>
+    <p class="mt-4 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
+      Unique metaphors: optical paradoxes, cyber biomimicry, gravitational lenses, and generative alchemy for modern backends.
+    </p>
+
+    <!-- Theme Preview Toggle -->
+    <div class="mt-6 flex flex-wrap justify-center items-center gap-2">
+      <span class="text-xs text-zinc-500 font-mono mr-2">Preview Theme:</span>
+      <button onclick="setTheme('bg-zinc-950 text-zinc-100')" class="px-3 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 transition">Dark Zinc</button>
+      <button onclick="setTheme('bg-black text-zinc-100')" class="px-3 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 transition">Pitch Black</button>
+      <button onclick="setTheme('bg-slate-900 text-zinc-100')" class="px-3 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 transition">Navy Slate</button>
+      <button onclick="setTheme('bg-zinc-100 text-zinc-900')" class="px-3 py-1.5 text-xs rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 border border-zinc-300 transition">Light Mode</button>
+    </div>
+  </header>
+
+  <!-- FEATURED: 3D High-Concept Renders Gallery -->
+  <section class="max-w-7xl mx-auto mb-16 bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 border border-zinc-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+    <div class="flex items-center justify-between mb-6 pb-4 border-b border-zinc-800">
+      <div>
+        <span class="text-xs font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2.5 py-1 rounded-md">Artistic Concept Renders</span>
+        <h2 class="text-2xl font-bold text-white mt-2">Studio 3D App Icon Visualizations</h2>
+      </div>
+      <span class="text-xs text-zinc-500 font-mono">Rendered for Retina / App Icon / Social Card</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="renders-grid">
+      <!-- Render 1: Penrose Loop -->
+      <div class="group relative rounded-2xl overflow-hidden bg-black border border-zinc-800 shadow-2xl card-hover">
+        <div class="aspect-square w-full overflow-hidden flex items-center justify-center bg-zinc-950">
+          <img src="./concept-render-penrose.jpg" alt="Penrose Logo Render" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='./concept-render-falcon.jpg'" />
+        </div>
+        <div class="p-4 bg-zinc-900/90 border-t border-zinc-800 flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-sm text-white">The Penrose Loop</h4>
+            <span class="text-[11px] text-cyan-400 font-mono">Impossible 3D Paradox</span>
+          </div>
+          <span class="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">Rendered</span>
+        </div>
+      </div>
+
+      <!-- Render 2: Cyber Falcon -->
+      <div class="group relative rounded-2xl overflow-hidden bg-black border border-zinc-800 shadow-2xl card-hover">
+        <div class="aspect-square w-full overflow-hidden flex items-center justify-center bg-zinc-950">
+          <img src="./concept-render-falcon.jpg" alt="Cyber Falcon Logo Render" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.parentElement.innerHTML='<div class=\'text-center p-6 text-zinc-500 font-mono text-xs\'>Rendering in progress...</div>'" />
+        </div>
+        <div class="p-4 bg-zinc-900/90 border-t border-zinc-800 flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-sm text-white">The Cyber Falcon</h4>
+            <span class="text-[11px] text-purple-400 font-mono">Supersonic Speed</span>
+          </div>
+          <span class="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">Rendered</span>
+        </div>
+      </div>
+
+      <!-- Render 3: Bioluminescent Manta -->
+      <div class="group relative rounded-2xl overflow-hidden bg-black border border-zinc-800 shadow-2xl card-hover">
+        <div class="aspect-square w-full overflow-hidden flex items-center justify-center bg-zinc-950">
+          <img src="./concept-render-manta.jpg" alt="Cyber Manta Logo Render" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.parentElement.innerHTML='<div class=\'text-center p-6 text-zinc-500 font-mono text-xs\'>Rendering in progress...</div>'" />
+        </div>
+        <div class="p-4 bg-zinc-900/90 border-t border-zinc-800 flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-sm text-white">The Cyber Manta</h4>
+            <span class="text-[11px] text-emerald-400 font-mono">Marine Biomimicry</span>
+          </div>
+          <span class="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">Rendered</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live Preview Box (Sidebar + Favicon + Dock) -->
+  <section class="max-w-7xl mx-auto mb-16 bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-6 border-b border-zinc-800/80">
+      <div>
+        <div class="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase tracking-wider">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Active Selected Logo
+        </div>
+        <h3 id="active-title" class="text-2xl font-bold text-white mt-1">Creative 01: The Penrose Loop</h3>
+        <p id="active-desc" class="text-xs text-zinc-400 mt-0.5">An impossible 3D optical illusion triangle representing infinite runtime schema introspection.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="copyCurrentSvg()" class="px-4 py-2 text-xs font-mono rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold shadow-lg transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy SVG Code
+        </button>
+      </div>
+    </div>
+
+    <!-- 3 Contexts -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Context 1: Sidebar -->
+      <div class="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex flex-col justify-between">
+        <span class="text-[11px] font-mono text-zinc-500 uppercase tracking-wider mb-3">01 • Sidebar Header (1:1 UI)</span>
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div id="preview-sidebar" class="w-8 h-8 flex items-center justify-center"></div>
+            <div>
+              <span class="font-bold text-base tracking-tight text-white block leading-tight">Admin<span class="text-cyan-400">Gen</span></span>
+              <span class="text-[10px] text-zinc-500 font-mono block">Elysia + Drizzle</span>
+            </div>
+          </div>
+          <span class="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-mono">v0.2.0</span>
+        </div>
+      </div>
+
+      <!-- Context 2: Browser Tab Favicon -->
+      <div class="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex flex-col justify-between">
+        <span class="text-[11px] font-mono text-zinc-500 uppercase tracking-wider mb-3">02 • Browser Tab (Favicon 16px/32px)</span>
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3 flex items-center gap-3">
+          <div class="w-6 h-6 rounded bg-zinc-950 flex items-center justify-center p-0.5 border border-zinc-800" id="preview-favicon"></div>
+          <span class="text-xs text-zinc-300 font-medium truncate">AdminGen Dashboard — Posts</span>
+          <span class="ml-auto text-zinc-500 text-xs">✕</span>
+        </div>
+      </div>
+
+      <!-- Context 3: App Icon Squircle -->
+      <div class="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex flex-col justify-between">
+        <span class="text-[11px] font-mono text-zinc-500 uppercase tracking-wider mb-3">03 • macOS Dock / App Squircle</span>
+        <div class="flex items-center justify-center py-1">
+          <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-700/80 shadow-2xl flex items-center justify-center p-2" id="preview-badge"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 12 Creative Vector Concepts Grid -->
+  <main class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20">
+
+    <!-- CONCEPT 01: Penrose Paradox -->
+    <div onclick="selectConcept(1)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-cyan-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded">01 • Optical Paradox</span>
+        <span class="text-[11px] text-cyan-300/80 font-medium">★ Top Pick</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">The Penrose Loop</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Impossible 3D optical illusion triangle.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c1" class="w-28 h-28 glow-cyan transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr1-f1" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00eaff" /><stop offset="100%" stop-color="#0284c7" /></linearGradient>
+            <linearGradient id="cr1-f2" x1="100" y1="20" x2="20" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3b82f6" /><stop offset="100%" stop-color="#6366f1" /></linearGradient>
+            <linearGradient id="cr1-f3" x1="20" y1="90" x2="100" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#8b5cf6" /><stop offset="100%" stop-color="#00eaff" /></linearGradient>
+          </defs>
+          <polygon points="60,16 72,23 34,88 22,81" fill="url(#cr1-f1)" />
+          <polygon points="60,16 60,30 34,74 22,81" fill="#ffffff" fill-opacity="0.3" />
+          <polygon points="60,16 72,23 98,68 86,75" fill="url(#cr1-f2)" />
+          <polygon points="98,68 86,75 48,75 48,89 104,89" fill="url(#cr1-f3)" />
+          <polygon points="34,88 48,89 86,89 86,75 34,75" fill="url(#cr1-f1)" fill-opacity="0.9" />
+          <circle cx="60" cy="56" r="4.5" fill="#00eaff" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 02: Cyber Manta -->
+    <div onclick="selectConcept(2)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">02 • Biomimicry</span>
+        <span class="text-[11px] text-emerald-300 font-medium">★ Wave Evolution</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">The Cyber Manta</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Bioluminescent ray gliding through deep digital ocean.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c2" class="w-28 h-28 glow-emerald transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr2-m" x1="10" y1="20" x2="110" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00f5d4" /><stop offset="50%" stop-color="#06b6d4" /><stop offset="100%" stop-color="#3b82f6" /></linearGradient>
+          </defs>
+          <path d="M 60 18 C 65 30, 85 45, 110 50 C 95 65, 80 72, 60 96 C 40 72, 25 65, 10 50 C 35 45, 55 30, 60 18 Z" fill="url(#cr2-m)" />
+          <path d="M 60 28 L 60 90" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M 60 42 C 72 48, 86 52, 94 54" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-opacity="0.8" />
+          <path d="M 60 42 C 48 48, 34 52, 26 54" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-opacity="0.8" />
+          <circle cx="56" cy="24" r="2.5" fill="#ffffff" />
+          <circle cx="64" cy="24" r="2.5" fill="#ffffff" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 03: The Alchemy Spark -->
+    <div onclick="selectConcept(3)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-amber-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-amber-400 bg-amber-950/60 border border-amber-800/40 px-2 py-0.5 rounded">03 • Generation</span>
+        <span class="text-[11px] text-amber-300 font-medium">★ Synthesis</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">The Alchemy Spark</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Kinetic starburst erupting from schema database.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c3" class="w-28 h-28 glow-amber transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr3-sp" x1="15" y1="15" x2="105" y2="105" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fbbf24" /><stop offset="50%" stop-color="#f59e0b" /><stop offset="100%" stop-color="#f97316" /></linearGradient>
+          </defs>
+          <polygon points="60,68 90,82 60,98 30,82" fill="#1e1b4b" stroke="#6366f1" stroke-width="2" />
+          <path d="M 60 12 Q 60 48 96 48 Q 60 48 60 84 Q 60 48 24 48 Q 60 48 60 12 Z" fill="url(#cr3-sp)" />
+          <circle cx="60" cy="48" r="6" fill="#ffffff" />
+          <circle cx="60" cy="48" r="11" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.6" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 04: The Schema Iris -->
+    <div onclick="selectConcept(4)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-violet-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-violet-400 bg-violet-950/60 border border-violet-800/40 px-2 py-0.5 rounded">04 • Vision</span>
+        <span class="text-[11px] text-zinc-500">Aperture</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">The Schema Iris</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Quantum aperture scanning runtime schemas.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c4" class="w-28 h-28 glow-violet transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="60" r="46" stroke="#312e81" stroke-width="3" stroke-dasharray="6 4" fill="none" />
+          <path d="M 60 18 L 86 44 L 60 70 Z" fill="#6366f1" fill-opacity="0.9" />
+          <path d="M 102 60 L 76 86 L 50 60 Z" fill="#8b5cf6" fill-opacity="0.9" />
+          <path d="M 60 102 L 34 76 L 60 50 Z" fill="#a855f7" fill-opacity="0.9" />
+          <path d="M 18 60 L 44 34 L 70 60 Z" fill="#00eaff" fill-opacity="0.8" />
+          <circle cx="60" cy="60" r="5" fill="#00eaff" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 05: The Black Hole Lens (NEW!) -->
+    <div onclick="selectConcept(5)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-cyan-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded">05 • Astrophysics</span>
+        <span class="text-[11px] text-cyan-300 font-medium">★ Event Horizon</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Gravitational Lens</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Bending raw data into a glowing event horizon.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c5" class="w-28 h-28 glow-cyan transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr5-lens" x1="15" y1="15" x2="105" y2="105" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00eaff" /><stop offset="60%" stop-color="#8b5cf6" /><stop offset="100%" stop-color="#ec4899" /></linearGradient>
+          </defs>
+          <!-- Accretion Warp Arcs -->
+          <ellipse cx="60" cy="60" rx="48" ry="16" stroke="url(#cr5-lens)" stroke-width="3" transform="rotate(-30 60 60)" />
+          <ellipse cx="60" cy="60" rx="48" ry="16" stroke="url(#cr5-lens)" stroke-width="2.5" transform="rotate(30 60 60)" stroke-opacity="0.6" />
+          <!-- Black Hole Singularity -->
+          <circle cx="60" cy="60" r="22" fill="#000000" stroke="#00eaff" stroke-width="2" />
+          <!-- Upward Photon Jet / Apex -->
+          <polygon points="60,20 68,46 52,46" fill="#ffffff" />
+          <line x1="60" y1="20" x2="60" y2="100" stroke="#00eaff" stroke-width="2" stroke-dasharray="4 4" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 06: Cyber Falcon (NEW!) -->
+    <div onclick="selectConcept(6)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-purple-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-purple-400 bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 rounded">06 • Speed & Myth</span>
+        <span class="text-[11px] text-purple-300 font-medium">★ 40MB RAM</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Cyber Origami Falcon</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Supersonic origami bird slicing through monolithic bloat.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c6" class="w-28 h-28 glow-violet transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr6-falc" x1="20" y1="15" x2="100" y2="105" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#c084fc" /><stop offset="50%" stop-color="#818cf8" /><stop offset="100%" stop-color="#00eaff" /></linearGradient>
+          </defs>
+          <!-- Falcon Apex Head -->
+          <polygon points="60,18 66,34 54,34" fill="#ffffff" />
+          <!-- Swept Back Left Wing -->
+          <polygon points="54,34 16,56 42,66 52,48" fill="#4f46e5" />
+          <polygon points="42,66 22,86 48,82 54,64" fill="#6366f1" />
+          <!-- Swept Back Right Wing -->
+          <polygon points="66,34 104,56 78,66 68,48" fill="#7c3aed" />
+          <polygon points="78,66 98,86 72,82 66,64" fill="#8b5cf6" />
+          <!-- Center Tail Feather -->
+          <polygon points="60,48 56,98 64,98" fill="url(#cr6-falc)" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 07: DNA Helix Genesis (NEW!) -->
+    <div onclick="selectConcept(7)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded">07 • Genetics</span>
+        <span class="text-[11px] text-zinc-500">DNA</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">The Schema Helix</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">AdminGen as the genetic code of your backend.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c7" class="w-28 h-28 glow-emerald transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr7-dna" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#10b981" /><stop offset="100%" stop-color="#00eaff" /></linearGradient>
+          </defs>
+          <!-- Helix Strands -->
+          <path d="M 38 96 C 38 68, 82 52, 60 20 C 38 52, 82 68, 82 96" stroke="url(#cr7-dna)" stroke-width="4.5" fill="none" stroke-linecap="round" />
+          <!-- Data Base Rungs -->
+          <line x1="42" y1="84" x2="78" y2="84" stroke="#00f5d4" stroke-width="2.5" />
+          <line x1="48" y1="68" x2="72" y2="68" stroke="#38bdf8" stroke-width="2.5" />
+          <line x1="56" y1="52" x2="64" y2="52" stroke="#ffffff" stroke-width="3" />
+          <line x1="52" y1="36" x2="68" y2="36" stroke="#00f5d4" stroke-width="2.5" />
+          <circle cx="60" cy="20" r="4.5" fill="#ffffff" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 08: Floating Monolith (NEW!) -->
+    <div onclick="selectConcept(8)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-cyan-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded">08 • Sci-Fi</span>
+        <span class="text-[11px] text-zinc-500">Monolith</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Floating Obsidian Monolith</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Silent, unyielding monolith hovering above a neon grid.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c8" class="w-28 h-28 glow-cyan transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <!-- Monolith Body -->
+          <polygon points="60,16 84,36 84,86 60,68" fill="#18181b" stroke="#00eaff" stroke-width="2" />
+          <polygon points="60,16 36,36 36,86 60,68" fill="#27272a" stroke="#00eaff" stroke-width="2" />
+          <!-- Neon Core Slot -->
+          <line x1="60" y1="28" x2="60" y2="58" stroke="#00eaff" stroke-width="3" stroke-linecap="round" />
+          <!-- Grid Floor Below -->
+          <ellipse cx="60" cy="98" rx="36" ry="10" stroke="#6366f1" stroke-width="2" stroke-dasharray="4 4" fill="none" />
+          <circle cx="60" cy="98" r="4" fill="#00eaff" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 09: Hyperspace Keyhole (NEW!) -->
+    <div onclick="selectConcept(9)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-rose-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 rounded">09 • Access Portal</span>
+        <span class="text-[11px] text-rose-300 font-medium">★ Unlocked</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Hyperspace Keyhole</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Minimalist keyhole opening into a warp-speed data portal.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c9" class="w-28 h-28 glow-rose transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr9-k" x1="10" y1="10" x2="110" y2="110" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f43f5e" /><stop offset="100%" stop-color="#8b5cf6" /></linearGradient>
+          </defs>
+          <!-- Hexagonal Gateway Plate -->
+          <polygon points="60,12 102,34 102,86 60,108 18,86 18,34" stroke="url(#cr9-k)" stroke-width="4.5" fill="none" />
+          <!-- Keyhole Cutout (Forming an "A" silhouette) -->
+          <circle cx="60" cy="46" r="14" fill="#ffffff" />
+          <polygon points="52,46 68,46 76,82 44,82" fill="#ffffff" />
+          <circle cx="60" cy="46" r="5" fill="#f43f5e" />
+          <line x1="50" y1="68" x2="70" y2="68" stroke="#f43f5e" stroke-width="2" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 10: Deep-Sea Cyber Jellyfish (NEW!) -->
+    <div onclick="selectConcept(10)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-cyan-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded">10 • Marine Tech</span>
+        <span class="text-[11px] text-zinc-500">Fluid</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Deep-Sea Jellyfish</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Bioluminescent bell floating with trailing circuit tentacles.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c10" class="w-28 h-28 glow-cyan transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr10-j" x1="20" y1="20" x2="100" y2="80" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00eaff" /><stop offset="100%" stop-color="#6366f1" /></linearGradient>
+          </defs>
+          <!-- Bell Dome (A apex) -->
+          <path d="M 28 58 C 28 30, 42 18, 60 18 C 78 18, 92 30, 92 58 C 82 54, 72 62, 60 56 C 48 62, 38 54, 28 58 Z" fill="url(#cr10-j)" />
+          <path d="M 40 46 C 46 32, 74 32, 80 46" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7" />
+          <!-- Tentacle Pulse Lines -->
+          <path d="M 46 60 Q 42 80 48 100" stroke="#00eaff" stroke-width="2.5" stroke-linecap="round" fill="none" />
+          <path d="M 60 58 Q 62 80 60 104" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" />
+          <path d="M 74 60 Q 78 80 72 100" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round" fill="none" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 11: The Cyber Bao Guardian (Mascot) -->
+    <div onclick="selectConcept(11)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-rose-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 rounded">11 • Bun Mascot</span>
+        <span class="text-[11px] text-rose-300 font-medium">★ Fan Favorite</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Cyber Bao Guardian</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">A robotic dumpling wearing neon visor glasses.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c11" class="w-28 h-28 glow-rose transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="cr11-b" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ffffff" /><stop offset="70%" stop-color="#fed7aa" /><stop offset="100%" stop-color="#fdba74" /></linearGradient>
+            <linearGradient id="cr11-v" x1="30" y1="55" x2="90" y2="55" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00eaff" /><stop offset="100%" stop-color="#f43f5e" /></linearGradient>
+          </defs>
+          <path d="M 60 22 C 64 22, 68 26, 72 32 C 92 38, 102 55, 100 78 C 98 94, 78 100, 60 100 C 42 100, 22 94, 20 78 C 18 55, 28 38, 48 32 C 52 26, 56 22, 60 22 Z" fill="url(#cr11-b)" />
+          <path d="M 54 28 C 60 34, 60 34, 66 28" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" />
+          <rect x="32" y="52" width="56" height="15" rx="7.5" fill="#09090b" stroke="#f43f5e" stroke-width="2" />
+          <rect x="36" y="55" width="48" height="9" rx="4.5" fill="url(#cr11-v)" />
+          <path d="M 54 78 Q 60 84 66 78" stroke="#09090b" stroke-width="3" stroke-linecap="round" fill="none" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONCEPT 12: The Data Helm -->
+    <div onclick="selectConcept(12)" class="cursor-pointer card-hover relative flex flex-col bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 hover:border-cyan-500/60 rounded-3xl p-6 shadow-xl group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded">12 • Cockpit</span>
+        <span class="text-[11px] text-zinc-500">Command</span>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">The Data Helm</h2>
+      <p class="text-xs text-zinc-400 mb-5 min-h-[32px]">Cockpit steering helm fused with North-Star compass.</p>
+      <div class="relative bg-zinc-950/80 rounded-2xl border border-zinc-800/80 p-6 flex items-center justify-center min-h-[170px]">
+        <svg id="svg-c12" class="w-28 h-28 glow-cyan transition-transform duration-300 group-hover:scale-105" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="60" r="44" stroke="#00eaff" stroke-width="4.5" stroke-dasharray="60 15 60 15" fill="none" />
+          <path d="M 60 16 L 78 72 L 60 62 L 42 72 Z" fill="#00eaff" />
+          <line x1="60" y1="62" x2="60" y2="98" stroke="#00eaff" stroke-width="4" stroke-linecap="round" />
+          <line x1="24" y1="60" x2="50" y2="60" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+          <line x1="70" y1="60" x2="96" y2="60" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+          <circle cx="60" cy="60" r="8" fill="#ffffff" />
+          <circle cx="60" cy="60" r="3" fill="#0284c7" />
+        </svg>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="copy-toast" class="fixed bottom-6 right-6 bg-cyan-500 text-black px-4 py-2.5 rounded-xl font-mono text-xs font-bold shadow-2xl transition-all opacity-0 translate-y-4 pointer-events-none z-50">
+    ✔ SVG copied to clipboard!
+  </div>
+
+  <!-- JavaScript for Interaction -->
+  <script>
+    let activeConceptNumber = 1;
+
+    const conceptsMeta = {
+      1: { title: 'Creative 01: The Penrose Loop', desc: 'An impossible 3D optical illusion triangle representing infinite runtime schema introspection.' },
+      2: { title: 'Creative 02: The Cyber Manta', desc: 'A bioluminescent manta ray gliding through deep digital water—evolving the Sorvien wave.' },
+      3: { title: 'Creative 03: The Alchemy Spark', desc: 'A kinetic 4-point generative star bursting through an isometric database cube.' },
+      4: { title: 'Creative 04: The Schema Iris', desc: 'A camera aperture scanning runtime schemas with laser precision.' },
+      5: { title: 'Creative 05: Gravitational Lens', desc: 'A cosmic black hole accretion disc bending raw data into a glowing event horizon.' },
+      6: { title: 'Creative 06: Cyber Origami Falcon', desc: 'Supersonic origami bird slicing through monolithic bloat at 40MB RAM speed.' },
+      7: { title: 'Creative 07: The Schema Helix', desc: 'A neon DNA double helix representing AdminGen as the genetic code of your backend.' },
+      8: { title: 'Creative 08: Floating Obsidian Monolith', desc: 'A sci-fi floating alien monolith projecting luminous schema glyphs.' },
+      9: { title: 'Creative 09: Hyperspace Keyhole', desc: 'Minimalist keyhole opening into a warp-speed data dimension.' },
+      10: { title: 'Creative 10: Deep-Sea Jellyfish', desc: 'A glowing bio-dome with trailing circuit tentacles navigating deep databases.' },
+      11: { title: 'Creative 11: Cyber Bao Guardian', desc: 'A cute robotic dumpling wearing neon visor glasses—a fun nod to Bun.' },
+      12: { title: 'Creative 12: The Data Helm', desc: 'Cockpit control wheel and compass steering your entire database.' }
+    };
+
+    function setTheme(classes) {
+      document.body.className = classes + ' min-h-screen py-12 px-4 sm:px-6 lg:px-8 selection:bg-cyan-500 selection:text-black';
+    }
+
+    function copyCurrentSvg() {
+      const sourceSvg = document.getElementById('svg-c' + activeConceptNumber);
+      if (!sourceSvg) return;
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(sourceSvg);
+      navigator.clipboard.writeText(svgStr).then(() => {
+        showToast();
+      });
+    }
+
+    function showToast() {
+      const toast = document.getElementById('copy-toast');
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+      }, 2200);
+    }
+
+    function selectConcept(num) {
+      activeConceptNumber = num;
+
+      // Update Top Box Header
+      const meta = conceptsMeta[num];
+      if (meta) {
+        document.getElementById('active-title').innerText = meta.title;
+        document.getElementById('active-desc').innerText = meta.desc;
+      }
+
+      // Clone SVG to preview boxes
+      const sourceSvg = document.getElementById('svg-c' + num);
+      if (!sourceSvg) return;
+
+      const sidebarBox = document.getElementById('preview-sidebar');
+      const faviconBox = document.getElementById('preview-favicon');
+      const badgeBox = document.getElementById('preview-badge');
+
+      sidebarBox.innerHTML = '';
+      const sidebarClone = sourceSvg.cloneNode(true);
+      sidebarClone.setAttribute('class', 'w-full h-full');
+      sidebarBox.appendChild(sidebarClone);
+
+      faviconBox.innerHTML = '';
+      const faviconClone = sourceSvg.cloneNode(true);
+      faviconClone.setAttribute('class', 'w-full h-full');
+      faviconBox.appendChild(faviconClone);
+
+      badgeBox.innerHTML = '';
+      const badgeClone = sourceSvg.cloneNode(true);
+      badgeClone.setAttribute('class', 'w-full h-full drop-shadow-lg');
+      badgeBox.appendChild(badgeClone);
+
+      // Smooth scroll to top preview
+      window.scrollTo({ top: 400, behavior: 'smooth' });
+    }
+
+    // Initialize with concept 1
+    window.addEventListener('DOMContentLoaded', () => {
+      selectConcept(1);
+    });
+  </script>
+
+  <!-- Footer -->
+  <footer class="max-w-7xl mx-auto text-center border-t border-zinc-900 pt-8 text-xs text-zinc-500 font-mono">
+    AdminGen Open Source • Sorvien Group • Creative Identity Lab
+  </footer>
+
+</body>
+</html>

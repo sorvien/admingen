@@ -5,6 +5,9 @@ hero:
   name: "AdminGen"
   text: "Instant Admin Panel for Bun & Elysia"
   tagline: "Introspects Drizzle ORM schemas at runtime. Runs under 40MB RAM. Zero manual dashboard coding."
+  image:
+    src: /logo.svg
+    alt: AdminGen Logo
   actions:
     - theme: brand
       text: Get Started

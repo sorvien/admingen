@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Toaster } from 'sonner'
 import { useAuth } from '../hooks/useAuth'
 import { CommandPalette } from '../components/CommandPalette'
+import { Logo } from '../components/Logo'
 import type { AdminSchema } from '@sorvien/admingen-types'
 
 const fetchAdminSchema = async (): Promise<AdminSchema> => {
@@ -107,8 +108,8 @@ function RootComponent() {
           `}
         >
           <div className="flex items-center justify-between mb-4">
-            <Link to="/" className="font-bold text-lg">
-              Admin Dashboard
+            <Link to="/" className="flex items-center">
+              <Logo size={28} showText={true} />
             </Link>
             {/* Close button inside sidebar on mobile */}
             <button

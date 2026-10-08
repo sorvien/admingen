@@ -10,6 +10,7 @@ export default defineConfig({
   ],
   themeConfig: {
     siteTitle: 'AdminGen',
+    logo: '/logo.svg',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Recipes', link: '/guide/sqlite' },
