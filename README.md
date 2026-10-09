@@ -16,6 +16,7 @@
   <a href="https://github.com/sorvien/admingen/actions"><img src="https://img.shields.io/github/actions/workflow/status/sorvien/admingen/build.yml?branch=main" alt="GitHub Workflow Status" /></a>
   <a href="https://github.com/sorvien/admingen/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/sorvien/admingen/good%20first%20issue?color=7057ff&label=Good%20First%20Issues" alt="Good First Issues" /></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+  <a href="https://github.com/sponsors/omarghandour"><img src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa.svg?logo=githubsponsors" alt="Sponsor" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/Runtime-Bun-f472b6.svg" alt="Powered by Bun" /></a>
   <a href="https://elysiajs.com"><img src="https://img.shields.io/badge/Backend-ElysiaJS-9333ea.svg" alt="Backend: Elysia" /></a>
@@ -245,9 +246,9 @@ Live milestone tracking is available on our [GitHub Milestones](https://github.c
 - [x] Dynamic TanStack Table & Sidebar navigation
 - [x] Relational foreign key dropdown lookups
 - [x] Zero-config schema & auth fallback mode
-- [ ] **[v0.2.0](https://github.com/sorvien/admingen/milestone/1):** UI Polish & Table UX (Toasts, Bulk actions, Column visibility, Shortcuts modal, Faceted filters)
-- [ ] **[v0.3.0](https://github.com/sorvien/admingen/milestone/2):** Extensibility & DB Parity (Lifecycle hooks, MySQL/MariaDB dialect, Custom row actions, RBAC)
-- [ ] **[v1.0.0](https://github.com/sorvien/admingen/milestone/3):** Production Readiness (Dedicated docs hub, Dashboard KPI widgets, S3 uploads, CLI starter)
+- [x] **[v0.2.0](https://github.com/sorvien/admingen/milestone/1):** UI Polish & Table UX (Toasts, Cmd+K palette, CSV export, Relative timestamps, Password show/hide, Faceted filters)
+- [x] **[v0.3.0](https://github.com/sorvien/admingen/milestone/2):** Extensibility & DB Parity (Lifecycle hooks, Multi-package manager CLI, Composite keys, RBAC permissions)
+- [ ] **[v1.0.0](https://github.com/sorvien/admingen/milestone/3):** Production Readiness (Dedicated docs hub, Dashboard KPI widgets, S3 uploads)
 
 ---
 
@@ -258,6 +259,30 @@ We warmly welcome community contributions! Whether you're fixing a typo, buildin
 - 🐣 **New to the project?** Start with our curated **[Good First Issues](https://github.com/sorvien/admingen/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)**.
 - 📖 Check out the full **[Contributing Guide](CONTRIBUTING.md)** for local development setup, codebase architecture, and PR steps.
 - 💬 Have questions or feature ideas? Join the discussion on [GitHub Issues](https://github.com/sorvien/admingen/issues).
+
+---
+
+## 👥 Contributors
+
+Huge thanks to everyone who has contributed code, documentation, and ideas to AdminGen!
+
+<p align="center">
+  <a href="https://github.com/sorvien/admingen/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=sorvien/admingen" alt="AdminGen Contributors" />
+  </a>
+</p>
+
+Want to see your face here? Pick up a [Good First Issue](https://github.com/sorvien/admingen/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and submit a pull request!
+
+---
+
+## 💖 Support AdminGen
+
+If AdminGen saves you time building internal dashboards or you want to support continuous development:
+
+- ⭐ **Star the repository** to help other developers discover the project.
+- 💬 **Share feedback** or feature requests on [GitHub Issues](https://github.com/sorvien/admingen/issues).
+- ☕ **[Sponsor on GitHub](https://github.com/sponsors/omarghandour)** to support maintenance, hosting benchmarks, and new database adapters.
 
 ---
 
