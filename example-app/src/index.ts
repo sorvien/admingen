@@ -51,7 +51,7 @@ const authProvider = {
   authenticate: async (ctx: any) => {
     const token = ctx.cookie?.auth?.value || ctx.cookie?.auth;
     if (token === 'admin_token') {
-      return { id: 1, name: 'Admin User', email: 'admin@example.com' };
+      return { id: 1, name: 'Admin User', email: 'admin@example.com', role: 'admin' };
     }
     return null;
   }

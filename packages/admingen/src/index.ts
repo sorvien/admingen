@@ -60,7 +60,7 @@ export const AdminGen = ({
     beforeHandle,
     authProvider,
     debug = false
-}: AdminGenOptions) => {
+}: AdminGenOptions): any => {
     const uiAssetsPath = resolveUiAssetsPath();
 
     if (debug) {
