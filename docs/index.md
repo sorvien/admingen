@@ -26,8 +26,8 @@ features:
     details: Pre-built with TanStack Table, Router, React Query, and Shadcn/UI for sub-millisecond client-side filtering and sorting.
   - title: 🪶 Ultra Low Memory Footprint
     details: Built on Bun to run under 40MB of memory. Host dozens of client admin dashboards on a single $5 VPS.
-  - title: 🔒 Pluggable Authentication
-    details: Works out of the box with zero configuration, or plug in Cookies, JWT, Better-Auth, or Lucia with one interface.
+  - title: 🔒 Pluggable Auth & RBAC
+    details: Works out of the box with zero configuration, or plug in Cookies, JWT, or Better-Auth with granular role-based permissions (list, read, create, update, delete).
 ---
 
 ## ⚡ Scaffold in 10 Seconds
