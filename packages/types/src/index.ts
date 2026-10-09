@@ -36,12 +36,21 @@ export interface ResourceHooks<T = any> {
   }) => Promise<void> | void;
 }
 
+export interface ResourcePermissions {
+  list?: string[] | boolean;
+  read?: string[] | boolean;
+  create?: string[] | boolean;
+  update?: string[] | boolean;
+  delete?: string[] | boolean;
+}
+
 export interface AdminResourceConfig<T = any> {
   slug: string; // e.g. "posts"
   label?: string;
   table: any; // The Drizzle table object
   fields: AdminField[];
   primaryKey?: string | string[];
+  permissions?: ResourcePermissions;
   hooks?: ResourceHooks<T>;
 }
 
@@ -57,6 +66,7 @@ export interface AdminSchema {
     label: string;
     fields: AdminField[];
     primaryKey?: string | string[];
+    permissions?: ResourcePermissions;
   }[];
 }
 
@@ -87,6 +97,8 @@ export interface AuthUser {
   name?: string;
   email?: string;
   avatar?: string;
+  role?: string;
+  roles?: string[];
 }
 
 export interface AuthProvider {

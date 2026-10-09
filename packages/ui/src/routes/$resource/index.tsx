@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select'
 import { CopyButton } from '@/components/CopyButton'
 import { exportToCsv, exportToJson } from '@/lib/utils'
+import { usePermission } from '@/hooks/usePermissions'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -114,6 +115,8 @@ function ResourceListComponent() {
     if (!schema || !schema.resources || !resourceName) return undefined
     return schema.resources.find((r) => r.name === resourceName)
   }, [schema, resourceName])
+
+  const { canList, canCreate, canUpdate, canDelete } = usePermission(resource)
 
   const columns = React.useMemo<Array<ColumnDef<any>>>(() => {
     if (!resource || !resource.fields) return []
@@ -200,70 +203,78 @@ function ResourceListComponent() {
       };
     })
 
-    // Add Actions Column
-    const actionsColumn: ColumnDef<any> = {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => {
-        const id = (() => {
-          if (Array.isArray(resource?.primaryKey)) {
-            return resource.primaryKey.map((key) => row.original[key]).join('_');
-          }
-          if (typeof resource?.primaryKey === 'string') {
-            return row.original[resource.primaryKey];
-          }
-          return row.original.id;
-        })();
-        return (
-          <div className="flex items-center gap-2">
-            <Link 
-              to="/$resource/$id" 
-              params={{ resource: resourceName, id: String(id) }}
-              className="px-2 py-1 text-xs bg-blue-600/20 text-blue-400 border border-blue-600/50 rounded hover:bg-blue-600/30 transition-colors"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => {
-                toast(`Delete item #${id}?`, {
-                  description: 'This action cannot be undone.',
-                  action: {
-                    label: 'Delete',
-                    onClick: async () => {
-                      const toastId = toast.loading(`Deleting #${id}...`);
-                      try {
-                        const res = await fetch(`/admin/api/${resourceName}/${id}`, {
-                          method: 'DELETE',
-                          credentials: 'include'
-                        });
-                        if (!res.ok) {
-                          const errText = await res.text();
-                          throw new Error(errText || 'Failed to delete');
-                        }
-                        await queryClient.invalidateQueries({ queryKey: ['resourceData', resourceName] });
-                        toast.success(`Record #${id} deleted successfully`, { id: toastId });
-                      } catch (e: any) {
-                        toast.error(e.message || 'Error deleting item', { id: toastId });
-                      }
-                    },
-                  },
-                  cancel: {
-                    label: 'Cancel',
-                    onClick: () => {},
-                  },
-                });
-              }}
-              className="px-2 py-1 text-xs bg-red-600/20 text-red-400 border border-red-600/50 rounded hover:bg-red-600/30 transition-colors cursor-pointer"
-            >
-              Delete
-            </button>
-          </div>
-        );
-      },
-    };
+    if (canUpdate || canDelete) {
+      // Add Actions Column
+      const actionsColumn: ColumnDef<any> = {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => {
+          const id = (() => {
+            if (Array.isArray(resource?.primaryKey)) {
+              return resource.primaryKey.map((key) => row.original[key]).join('_');
+            }
+            if (typeof resource?.primaryKey === 'string') {
+              return row.original[resource.primaryKey];
+            }
+            return row.original.id;
+          })();
+          return (
+            <div className="flex items-center gap-2">
+              {canUpdate && (
+                <Link 
+                  to="/$resource/$id" 
+                  params={{ resource: resourceName, id: String(id) }}
+                  className="px-2 py-1 text-xs bg-blue-600/20 text-blue-400 border border-blue-600/50 rounded hover:bg-blue-600/30 transition-colors"
+                >
+                  Edit
+                </Link>
+              )}
+              {canDelete && (
+                <button
+                  onClick={() => {
+                    toast(`Delete item #${id}?`, {
+                      description: 'This action cannot be undone.',
+                      action: {
+                        label: 'Delete',
+                        onClick: async () => {
+                          const toastId = toast.loading(`Deleting #${id}...`);
+                          try {
+                            const res = await fetch(`/admin/api/${resourceName}/${id}`, {
+                              method: 'DELETE',
+                              credentials: 'include'
+                            });
+                            if (!res.ok) {
+                              const errText = await res.text();
+                              throw new Error(errText || 'Failed to delete');
+                            }
+                            await queryClient.invalidateQueries({ queryKey: ['resourceData', resourceName] });
+                            toast.success(`Record #${id} deleted successfully`, { id: toastId });
+                          } catch (e: any) {
+                            toast.error(e.message || 'Error deleting item', { id: toastId });
+                          }
+                        },
+                      },
+                      cancel: {
+                        label: 'Cancel',
+                        onClick: () => {},
+                      },
+                    });
+                  }}
+                  className="px-2 py-1 text-xs bg-red-600/20 text-red-400 border border-red-600/50 rounded hover:bg-red-600/30 transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          );
+        },
+      };
 
-    return [...cols, actionsColumn];
-  }, [resource, resourceName, queryClient])
+      return [...cols, actionsColumn];
+    }
+
+    return cols;
+  }, [resource, resourceName, queryClient, canUpdate, canDelete])
 
   const table = useReactTable({
     data: paginatedData?.data ?? [],
@@ -292,8 +303,30 @@ function ResourceListComponent() {
     return <div className="text-red-500">Resource configuration not found.</div>
   }
 
+  if (!canList) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900/90 to-gray-900 flex items-center justify-center p-6 text-white">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mx-auto">
+            <FilterX className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-red-400">Access Denied</h2>
+            <p className="mt-1 text-sm text-gray-300">
+              You do not have permission to view {resource.label}.
+            </p>
+          </div>
+          <Link
+            to="/"
+            className="inline-block px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-md transition-colors"
+          >
+            Return to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
-  // ...existing code...
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-900 via-gray-900/90 to-gray-900 p-6 selection:bg-[#00eaff]/30 selection:text-white antialiased">
       <div className="max-w-5xl mx-auto">
@@ -316,11 +349,13 @@ function ResourceListComponent() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link to="/$resource/create" params={{ resource: resourceName }}>
-                <Button className="cursor-pointer transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                  Create
-                </Button>
-              </Link>
+              {canCreate && (
+                <Link to="/$resource/create" params={{ resource: resourceName }}>
+                  <Button className="cursor-pointer transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    Create
+                  </Button>
+                </Link>
+              )}
 
               <button
                 type="button"
@@ -464,12 +499,14 @@ function ResourceListComponent() {
                                 Get started by adding your first {resource?.label?.toLowerCase() ?? 'record'} to the database.
                               </p>
                             </div>
-                            <Link to="/$resource/create" params={{ resource: resourceName }}>
-                              <Button size="sm" className="mt-1 gap-1.5 cursor-pointer">
-                                <Plus className="w-4 h-4" />
-                                <span>Create {resource?.label ?? 'Record'}</span>
-                              </Button>
-                            </Link>
+                            {canCreate && (
+                              <Link to="/$resource/create" params={{ resource: resourceName }}>
+                                <Button size="sm" className="mt-1 gap-1.5 cursor-pointer">
+                                  <Plus className="w-4 h-4" />
+                                  <span>Create {resource?.label ?? 'Record'}</span>
+                                </Button>
+                              </Link>
+                            )}
                           </div>
                         )}
                       </td>

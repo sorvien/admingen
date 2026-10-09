@@ -5,6 +5,7 @@ import { useForm } from '@tanstack/react-form'
 import { ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AdminField, AdminSchema } from '@sorvien/admingen-types'
+import { usePermission } from '@/hooks/usePermissions'
 
 // --- Shadcn Components ---
 import { Input } from '@/components/ui/input'
@@ -44,10 +45,12 @@ function RelationshipField({
   field,
   fieldApi,
   getRelatedItemLabel,
+  disabled,
 }: {
   field: AdminField
   fieldApi: any
   getRelatedItemLabel: (item: any) => string
+  disabled?: boolean
 }) {
   const targetResource = field.relationTo
 
@@ -76,7 +79,7 @@ function RelationshipField({
           const numValue = !isNaN(Number(value)) ? Number(value) : value
           fieldApi.handleChange(numValue)
         }}
-        disabled={isLoading || field.readOnly}
+        disabled={isLoading || field.readOnly || disabled}
       >
         <SelectTrigger id={fieldApi.name} className="w-full bg-[#111827] text-white border-gray-700">
           <SelectValue
@@ -102,9 +105,11 @@ function RelationshipField({
 function SelectField({
   field,
   fieldApi,
+  disabled,
 }: {
   field: AdminField
   fieldApi: any
+  disabled?: boolean
 }) {
   return (
     <div className="flex flex-col gap-2 text-white">
@@ -116,7 +121,7 @@ function SelectField({
         onValueChange={(value) => {
           fieldApi.handleChange(value)
         }}
-        disabled={field.readOnly}
+        disabled={field.readOnly || disabled}
       >
         <SelectTrigger id={fieldApi.name} className="w-full bg-[#111827] text-white border-gray-700">
           <SelectValue placeholder={`Select ${field.label}`} />
@@ -136,9 +141,11 @@ function SelectField({
 function JsonField({
   field,
   fieldApi,
+  disabled,
 }: {
   field: AdminField
   fieldApi: any
+  disabled?: boolean
 }) {
   const [localValue, setLocalValue] = React.useState('')
   const [isError, setIsError] = React.useState(false)
@@ -202,7 +209,7 @@ function JsonField({
         value={localValue}
         onBlur={fieldApi.handleBlur}
         onChange={(e) => handleChange(e.target.value)}
-        disabled={field.readOnly}
+        disabled={field.readOnly || disabled}
       />
       {isError && <span className="text-xs text-red-500">Invalid JSON format</span>}
     </div>
@@ -212,9 +219,11 @@ function JsonField({
 function TextareaField({
   field,
   fieldApi,
+  disabled,
 }: {
   field: AdminField
   fieldApi: any
+  disabled?: boolean
 }) {
   return (
     <div className="flex flex-col gap-2 text-white">
@@ -229,7 +238,7 @@ function TextareaField({
         value={fieldApi.state.value ?? ''}
         onBlur={fieldApi.handleBlur}
         onChange={(e) => fieldApi.handleChange(e.target.value)}
-        disabled={field.readOnly}
+        disabled={field.readOnly || disabled}
       />
     </div>
   )
@@ -257,6 +266,8 @@ function EditComponent() {
     () => schema?.resources.find((r) => r.name === resourceName),
     [schema, resourceName],
   )
+
+  const { canRead, canUpdate } = usePermission(resource)
 
   const fields = React.useMemo(
     () => resource?.fields.filter((f) => !f.isId) ?? [],
@@ -317,7 +328,7 @@ function EditComponent() {
                  // If the API returns { author: { id: 1, name: '...' } }, we want 1.
                  defaults[field.name] = itemData[field.name].id;
             } else {
-                defaults[field.name] = itemData[field.name]
+                 defaults[field.name] = itemData[field.name]
             }
         } else {
              if (field.type === 'relationship') {
@@ -339,6 +350,24 @@ function EditComponent() {
   if (schemaLoading || itemLoading) return <div className="p-6">Loading...</div>
   if (!resource) return <div className="p-6 text-red-500">Resource not found.</div>
 
+  if (!canRead) {
+    return (
+      <div className="max-w-2xl mx-auto py-10 px-6 text-white text-center">
+        <h2 className="text-xl font-bold text-red-400 mb-2">Access Denied</h2>
+        <p className="text-sm text-gray-300 mb-4">
+          You do not have permission to view {resource.label}.
+        </p>
+        <Link
+          to="/$resource"
+          params={{ resource: resourceName }}
+          className="inline-block px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-md transition-colors"
+        >
+          Back to {resource.label}
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-2xl mx-auto py-10 px-6 text-white">
       <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-gray-400 mb-6">
@@ -354,16 +383,23 @@ function EditComponent() {
           {resource.label}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
-        <span className="text-gray-200 font-medium">Edit #{id}</span>
+        <span className="text-gray-200 font-medium">
+          {canUpdate ? `Edit #${id}` : `View #${id}`}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold capitalize text-white flex items-center gap-3">
-          <span>Edit {resource.label}</span>
+          <span>{canUpdate ? `Edit ${resource.label}` : `View ${resource.label}`}</span>
           <span className="text-xs font-mono font-normal text-gray-400 bg-gray-800/80 px-2.5 py-1 rounded border border-gray-700 flex items-center gap-1.5">
             <span>#{id}</span>
             <CopyButton text={String(id)} />
           </span>
+          {!canUpdate && (
+            <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2.5 py-1 rounded border border-yellow-500/40">
+              Read-Only
+            </span>
+          )}
         </h1>
       </div>
 
@@ -371,7 +407,9 @@ function EditComponent() {
         onSubmit={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          form.handleSubmit()
+          if (canUpdate) {
+            form.handleSubmit()
+          }
         }}
         className="space-y-6"
       >
@@ -387,6 +425,7 @@ function EditComponent() {
                     field={field}
                     fieldApi={fieldApi}
                     getRelatedItemLabel={getRelatedItemLabel}
+                    disabled={!canUpdate}
                   />
                 )
               }
@@ -396,6 +435,7 @@ function EditComponent() {
                   <SelectField
                     field={field}
                     fieldApi={fieldApi}
+                    disabled={!canUpdate}
                   />
                 )
               }
@@ -405,6 +445,7 @@ function EditComponent() {
                   <PasswordField
                     field={field}
                     fieldApi={fieldApi}
+                    disabled={!canUpdate}
                   />
                 )
               }
@@ -417,6 +458,7 @@ function EditComponent() {
                   <JsonField
                     field={field}
                     fieldApi={fieldApi}
+                    disabled={!canUpdate}
                   />
                 )
               }
@@ -426,6 +468,7 @@ function EditComponent() {
                   <TextareaField
                     field={field}
                     fieldApi={fieldApi}
+                    disabled={!canUpdate}
                   />
                 )
               }
@@ -442,7 +485,7 @@ function EditComponent() {
                         id={fieldApi.name}
                         checked={!!fieldApi.state.value}
                         onChange={(e) => fieldApi.handleChange(e.target.checked)}
-                        disabled={field.readOnly}
+                        disabled={field.readOnly || !canUpdate}
                         className="w-4 h-4 rounded border-gray-700 bg-[#111827] text-[#00eaff] focus:ring-[#00eaff]"
                       />
                       <Label htmlFor={fieldApi.name}>Active</Label>
@@ -470,7 +513,7 @@ function EditComponent() {
                         )
                       }}
                       type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
-                      disabled={field.readOnly}
+                      disabled={field.readOnly || !canUpdate}
                     />
                   )}
                 </div>
@@ -479,27 +522,29 @@ function EditComponent() {
           />
         ))}
 
-        <div className="pt-4">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <Button
-                type="submit"
-                className={`
-                  w-full py-2 px-4 rounded-md text-white font-medium 
-                  bg-[#00eaff]/20 hover:bg-[#00eaff]/40 
-                  border border-[#00eaff] 
-                  focus:outline-none focus:ring-2 focus:ring-[#00eaff] focus:ring-offset-1
-                  transition-all duration-200 cursor-pointer
-                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
-                `}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </Button>
-            )}
-          />
-        </div>
+        {canUpdate && (
+          <div className="pt-4">
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
+              children={([canSubmit, isSubmitting]) => (
+                <Button
+                  type="submit"
+                  className={`
+                    w-full py-2 px-4 rounded-md text-white font-medium 
+                    bg-[#00eaff]/20 hover:bg-[#00eaff]/40 
+                    border border-[#00eaff] 
+                    focus:outline-none focus:ring-2 focus:ring-[#00eaff] focus:ring-offset-1
+                    transition-all duration-200 cursor-pointer
+                    ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
+                  `}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              )}
+            />
+          </div>
+        )}
       </form>
     </div>
   )
