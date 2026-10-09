@@ -205,7 +205,15 @@ function ResourceListComponent() {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {
-        const id = row.original.id;
+        const id = (() => {
+          if (Array.isArray(resource?.primaryKey)) {
+            return resource.primaryKey.map((key) => row.original[key]).join('_');
+          }
+          if (typeof resource?.primaryKey === 'string') {
+            return row.original[resource.primaryKey];
+          }
+          return row.original.id;
+        })();
         return (
           <div className="flex items-center gap-2">
             <Link 

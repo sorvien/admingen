@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { Database } from 'bun:sqlite';
 import { createDrizzleAdapter } from '../src/index';
@@ -294,5 +294,87 @@ describe('AdminGen CRUD Handlers', () => {
 
     expect(result.data).toHaveLength(1);
     expect(result.data[0].status).toBe('draft');
+  });
+
+  it('should support CRUD operations on tables with composite primary keys', async () => {
+    const userRoles = sqliteTable('user_roles', {
+      userId: integer('user_id').notNull(),
+      roleId: integer('role_id').notNull(),
+      assignedBy: text('assigned_by'),
+    }, (table) => [
+      primaryKey({ columns: [table.userId, table.roleId] })
+    ]);
+
+    const sqlite = new Database(':memory:');
+    sqlite.run(`
+      CREATE TABLE user_roles (
+        user_id INTEGER NOT NULL,
+        role_id INTEGER NOT NULL,
+        assigned_by TEXT,
+        PRIMARY KEY (user_id, role_id)
+      )
+    `);
+
+    const compositeDb = drizzle(sqlite, { schema: { userRoles } });
+    const compositeAdapter = createDrizzleAdapter({ schema: { userRoles } });
+
+    // 1. Check schemaJson has primaryKey array
+    const resourceSchema = compositeAdapter.schemaJson.resources.find(r => r.name === 'userRoles');
+    expect(resourceSchema).toBeDefined();
+    expect(resourceSchema?.primaryKey).toEqual(['userId', 'roleId']);
+
+    // 2. Create
+    const created = await compositeAdapter.handlers.create('userRoles')({
+      db: compositeDb,
+      body: { userId: 1, roleId: 42, assignedBy: 'admin' },
+    });
+    expect(created.userId).toBe(1);
+    expect(created.roleId).toBe(42);
+    expect(created.assignedBy).toBe('admin');
+
+    // 3. Find One via delimiter '1_42'
+    const found = await compositeAdapter.handlers.findOne('userRoles')({
+      db: compositeDb,
+      params: { id: '1_42' },
+    });
+    expect(found).toBeDefined();
+    expect(found.userId).toBe(1);
+    expect(found.roleId).toBe(42);
+    expect(found.assignedBy).toBe('admin');
+
+    // 4. Find One via JSON string
+    const foundJson = await compositeAdapter.handlers.findOne('userRoles')({
+      db: compositeDb,
+      params: { id: JSON.stringify({ userId: 1, roleId: 42 }) },
+    });
+    expect(foundJson.assignedBy).toBe('admin');
+
+    // 5. Update via composite ID
+    const updated = await compositeAdapter.handlers.update('userRoles')({
+      db: compositeDb,
+      params: { id: '1_42' },
+      body: { assignedBy: 'superadmin' },
+    });
+    expect(updated.assignedBy).toBe('superadmin');
+
+    const foundAfterUpdate = await compositeAdapter.handlers.findOne('userRoles')({
+      db: compositeDb,
+      params: { id: '1_42' },
+    });
+    expect(foundAfterUpdate.assignedBy).toBe('superadmin');
+
+    // 6. Delete via composite ID
+    const deleted = await compositeAdapter.handlers.delete('userRoles')({
+      db: compositeDb,
+      params: { id: '1_42' },
+    });
+    expect(deleted.userId).toBe(1);
+    expect(deleted.roleId).toBe(42);
+
+    const foundAfterDelete = await compositeAdapter.handlers.findOne('userRoles')({
+      db: compositeDb,
+      params: { id: '1_42' },
+    });
+    expect(foundAfterDelete).toBeUndefined();
   });
 });

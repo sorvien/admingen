@@ -10,6 +10,33 @@ import type {
     AdminField
 } from '@sorvien/admingen-types';
 
+function getCompositePrimaryKeyColumns(table: any): Set<string> {
+    const pkColNames = new Set<string>();
+    const builderSym = Object.getOwnPropertySymbols(table).find(s =>
+        s.toString().includes('ExtraConfigBuilder')
+    );
+    if (builderSym && typeof table[builderSym] === 'function') {
+        try {
+            const extra = table[builderSym](table);
+            const items = Array.isArray(extra)
+                ? extra
+                : (extra && typeof extra === 'object' ? Object.values(extra) : []);
+            for (const item of items) {
+                if (item && Array.isArray((item as any).columns)) {
+                    for (const col of (item as any).columns) {
+                        if (col?.name) {
+                            pkColNames.add(col.name);
+                        }
+                    }
+                }
+            }
+        } catch {
+            // Ignore if extraConfig builder requires specialized context
+        }
+    }
+    return pkColNames;
+}
+
 export function introspectSchema(schema: Record<string, any>): AdminConfig {
     const resources: AdminResourceConfig[] = [];
     const tableToResourceMap = new Map<any, AdminResourceConfig>();
@@ -19,6 +46,7 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
     // 1. First Pass: Tables
     for (const [key, value] of Object.entries(schema)) {
         if (isTable(value)) {
+            const compositePkCols = getCompositePrimaryKeyColumns(value);
             const columns = getTableColumns(value);
 
             const fields: AdminField[] = [];
@@ -62,22 +90,35 @@ export function introspectSchema(schema: Record<string, any>): AdminConfig {
                     }
                 }
 
+                const isPk = Boolean(
+                    (column as any).primary ||
+                    (column as any).isPrimary ||
+                    compositePkCols.has((column as any).name) ||
+                    compositePkCols.has(colName)
+                );
+
                 fields.push({
                     name: colName,
                     label: colName,
                     type: adminType,
-                    isId: (column as any).primary || (column as any).isPrimary,
+                    isId: isPk,
                     required: (column as any).notNull,
                     readOnly: (column as any).generated || (column as any).isGenerated,
                     options
                 });
             }
 
+            const pkFields = fields.filter(f => f.isId);
+            const primaryKey = pkFields.length > 1
+                ? pkFields.map(f => f.name)
+                : (pkFields[0]?.name || 'id');
+
             const resource: AdminResourceConfig = {
                 slug: key,
                 label: key,
                 table: value,
-                fields
+                fields,
+                primaryKey
             };
             resources.push(resource);
             tableToResourceMap.set(value, resource);

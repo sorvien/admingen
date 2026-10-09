@@ -1,10 +1,11 @@
-import { eq, asc, desc, like, count } from 'drizzle-orm';
+import { eq, asc, desc, like, count, and } from 'drizzle-orm';
 import type {
   AdminConfig,
   AdapterResult,
   AdminHandlers,
   AdminSchema,
   AdminResourceConfig,
+  AdminField,
   PaginatedResponse
 } from '@sorvien/admingen-types';
 import { introspectSchema } from './introspect';
@@ -30,6 +31,70 @@ function sanitizeData(data: any): any {
   }
   
   return data;
+}
+
+function parsePrimaryKey(paramsId: any, pkFields: AdminField[]): any {
+  if (pkFields.length === 1) {
+    const pkField = pkFields[0];
+    return pkField?.type === 'number' ? Number(paramsId) : paramsId;
+  }
+
+  // Composite Primary Key handling
+  if (typeof paramsId === 'object' && paramsId !== null) {
+    return paramsId;
+  }
+
+  const idStr = String(paramsId ?? '');
+  if (idStr.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(idStr);
+      if (typeof parsed === 'object' && parsed !== null) {
+        const result: Record<string, any> = {};
+        for (const field of pkFields) {
+          const val = parsed[field.name];
+          result[field.name] = field.type === 'number' && val !== undefined ? Number(val) : val;
+        }
+        return result;
+      }
+    } catch {
+      // Fallback to delimiter below
+    }
+  }
+
+  // Delimiter fallback: support '_' or ':'
+  const delimiter = idStr.includes(':') ? ':' : '_';
+  const parts = idStr.split(delimiter);
+  const result: Record<string, any> = {};
+  pkFields.forEach((field, index) => {
+    const val = parts[index] ?? '';
+    result[field.name] = field.type === 'number' ? Number(val) : val;
+  });
+  return result;
+}
+
+function buildPrimaryKeyWhere(table: any, pkFields: AdminField[], parsedId: any) {
+  if (pkFields.length === 0) {
+    throw new Error('Primary key column not found on resource');
+  }
+
+  if (pkFields.length === 1) {
+    const pkField = pkFields[0];
+    const pkColumn = table[pkField.name];
+    if (!pkColumn) {
+      throw new Error(`Primary key column '${pkField.name}' not found on table`);
+    }
+    return eq(pkColumn, parsedId);
+  }
+
+  const conditions = pkFields.map(field => {
+    const pkColumn = table[field.name];
+    if (!pkColumn) {
+      throw new Error(`Primary key column '${field.name}' not found on table`);
+    }
+    return eq(pkColumn, parsedId[field.name]);
+  });
+
+  return and(...conditions);
 }
 
 type AdminResourceOverride =
@@ -61,6 +126,7 @@ export function createDrizzleAdapter(options: {
         ...override,
         table: override.table ?? resource.table,
         fields: override.fields ?? resource.fields,
+        primaryKey: override.primaryKey ?? resource.primaryKey,
         hooks: override.hooks ?? resource.hooks,
       };
     })
@@ -81,7 +147,8 @@ export function createDrizzleAdapter(options: {
     schemaJson.resources.push({
       name: resourceSlug,
       label: resourceConfig.label || resourceSlug,
-      fields: resourceConfig.fields
+      fields: resourceConfig.fields,
+      primaryKey: resourceConfig.primaryKey
     });
 
     // 2. Prepare Relationship Logic
@@ -153,6 +220,12 @@ export function createDrizzleAdapter(options: {
       return remapRelationshipFields(data);
     };
 
+    const pkFields = resourceConfig.fields.filter(f => f.isId);
+    if (pkFields.length === 0) {
+      const idField = resourceConfig.fields.find(f => f.name === 'id');
+      if (idField) pkFields.push(idField);
+    }
+
     // 3. Build Handlers specific to this resource
     handlerMap[resourceSlug] = {
 
@@ -223,18 +296,11 @@ export function createDrizzleAdapter(options: {
 
       // FIND ONE
       findOne: async ({ db, params }: { db: any, params: { id: any } }) => {
-        const pkField = resourceConfig.fields.find(f => f.isId);
-        const pkColumn = table[pkField?.name || 'id'];
-        
-        // Handle ID type (Drizzle integer vs string)
-        const id = pkField?.type === 'number' ? Number(params.id) : params.id;
-
-        if (!pkColumn) {
-          throw new Error(`Primary key column not found for ${resourceSlug}`);
-        }
+        const id = parsePrimaryKey(params.id, pkFields);
+        const where = buildPrimaryKeyWhere(table, pkFields, id);
 
         return sanitizeData(await db.query[resourceSlug].findFirst({
-          where: eq(pkColumn, id),
+          where,
           with: Object.keys(withRelations).length > 0 ? withRelations : undefined
         }));
       },
@@ -258,14 +324,13 @@ export function createDrizzleAdapter(options: {
 
       // UPDATE
       update: async ({ db, params, body }: { db: any, params: { id: any }, body: any }) => {
-        const pkField = resourceConfig.fields.find(f => f.isId);
-        const pkColumn = table[pkField?.name || 'id'];
-        const id = pkField?.type === 'number' ? Number(params.id) : params.id;
+        const id = parsePrimaryKey(params.id, pkFields);
+        const where = buildPrimaryKeyWhere(table, pkFields, id);
         const data = await prepareChangeData(body, 'update', id);
 
         const res = await db.update(table)
           .set(data)
-          .where(eq(pkColumn, id))
+          .where(where)
           .returning();
 
         const record = res[0];
@@ -284,9 +349,8 @@ export function createDrizzleAdapter(options: {
 
       // DELETE
       delete: async ({ db, params }: { db: any, params: { id: any } }) => {
-        const pkField = resourceConfig.fields.find(f => f.isId);
-        const pkColumn = table[pkField?.name || 'id'];
-        const id = pkField?.type === 'number' ? Number(params.id) : params.id;
+        const id = parsePrimaryKey(params.id, pkFields);
+        const where = buildPrimaryKeyWhere(table, pkFields, id);
 
         if (hooks?.beforeDelete) {
           const shouldDelete = await hooks.beforeDelete({ id });
@@ -299,7 +363,7 @@ export function createDrizzleAdapter(options: {
         }
 
         const res = await db.delete(table)
-          .where(eq(pkColumn, id))
+          .where(where)
           .returning();
 
         if (res[0] !== undefined && hooks?.afterDelete) {

@@ -21,18 +21,18 @@ export interface ResourceHooks<T = any> {
   beforeChange?: (ctx: {
     data: T;
     operation: 'create' | 'update';
-    id?: string | number;
+    id?: string | number | Record<string, string | number>;
   }) => Promise<T> | T;
   afterChange?: (ctx: {
     record: T;
     operation: 'create' | 'update';
-    id?: string | number;
+    id?: string | number | Record<string, string | number>;
   }) => Promise<void> | void;
   beforeDelete?: (ctx: {
-    id: string | number;
+    id: string | number | Record<string, string | number>;
   }) => Promise<void | boolean> | void | boolean;
   afterDelete?: (ctx: {
-    id: string | number;
+    id: string | number | Record<string, string | number>;
   }) => Promise<void> | void;
 }
 
@@ -41,6 +41,7 @@ export interface AdminResourceConfig<T = any> {
   label?: string;
   table: any; // The Drizzle table object
   fields: AdminField[];
+  primaryKey?: string | string[];
   hooks?: ResourceHooks<T>;
 }
 
@@ -55,6 +56,7 @@ export interface AdminSchema {
     name: string;
     label: string;
     fields: AdminField[];
+    primaryKey?: string | string[];
   }[];
 }
 
