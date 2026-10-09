@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import type { AdapterResult, AuthProvider } from '@sorvien/admingen-types';
+import type { AdapterResult, AuthProvider, AuthUser, ResourcePermissions } from '@sorvien/admingen-types';
 export * from '@sorvien/admingen-types';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -10,6 +10,31 @@ export interface AdminGenOptions {
     beforeHandle?: (context: any) => any;
     authProvider?: AuthProvider;
     debug?: boolean;
+}
+
+function extractUserRoles(user: AuthUser | null | undefined): string[] {
+    if (!user) return [];
+    const roles: string[] = [];
+    if (user.role) roles.push(user.role);
+    if (Array.isArray(user.roles)) roles.push(...user.roles);
+    return roles;
+}
+
+function checkPermission(
+    permissions: ResourcePermissions | undefined,
+    action: 'list' | 'read' | 'create' | 'update' | 'delete',
+    user: AuthUser | null | undefined
+): boolean {
+    if (!permissions) return true;
+    const rule = permissions[action] ?? (action === 'read' ? permissions.list : undefined);
+    if (rule === undefined) return true;
+    if (typeof rule === 'boolean') return rule;
+    if (Array.isArray(rule)) {
+        if (rule.length === 0) return false;
+        const userRoles = extractUserRoles(user);
+        return rule.some((r) => userRoles.includes(r));
+    }
+    return true;
 }
 
 function resolveUiAssetsPath(): string {
@@ -70,11 +95,21 @@ export const AdminGen = ({
 
     // --- API ROUTES ---
     app.group('/api', (api) => {
+        const getUserFromContext = async (ctx: any): Promise<AuthUser | null> => {
+            if (ctx.user !== undefined) return ctx.user;
+            if (authProvider) {
+                const user = await authProvider.authenticate(ctx);
+                ctx.user = user;
+                return user;
+            }
+            return { id: 'admin', name: 'Admin (No Auth)', role: 'admin' };
+        };
+
         if (authProvider) {
-            api.onBeforeHandle(async (ctx) => {
+            api.onBeforeHandle(async (ctx: any) => {
                 if (ctx.path.includes('/_auth/')) return;
 
-                const user = await authProvider.authenticate(ctx);
+                const user = await getUserFromContext(ctx);
                 if (!user) {
                     return new Response('Unauthorized', { status: 401 });
                 }
@@ -86,11 +121,44 @@ export const AdminGen = ({
 
         for (const resource of schemaJson.resources) {
             const resourceName = resource.name;
-            api.get(`/${resourceName}`, (ctx) => handlers.findMany(resourceName)(ctx));
-            api.get(`/${resourceName}/:id`, (ctx) => handlers.findOne(resourceName)(ctx));
-            api.post(`/${resourceName}`, (ctx) => handlers.create(resourceName)(ctx));
-            api.patch(`/${resourceName}/:id`, (ctx) => handlers.update(resourceName)(ctx));
-            api.delete(`/${resourceName}/:id`, (ctx) => handlers.delete(resourceName)(ctx));
+
+            const authorize = async (ctx: any, action: 'list' | 'read' | 'create' | 'update' | 'delete') => {
+                if (!resource.permissions) return null;
+                const user = await getUserFromContext(ctx);
+                if (!checkPermission(resource.permissions, action, user)) {
+                    return new Response(JSON.stringify({ error: `Forbidden: Insufficient permissions for ${action} on ${resourceName}` }), {
+                        status: 403,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                return null;
+            };
+
+            api.get(`/${resourceName}`, async (ctx) => {
+                const forbidden = await authorize(ctx, 'list');
+                if (forbidden) return forbidden;
+                return handlers.findMany(resourceName)(ctx);
+            });
+            api.get(`/${resourceName}/:id`, async (ctx) => {
+                const forbidden = await authorize(ctx, 'read');
+                if (forbidden) return forbidden;
+                return handlers.findOne(resourceName)(ctx);
+            });
+            api.post(`/${resourceName}`, async (ctx) => {
+                const forbidden = await authorize(ctx, 'create');
+                if (forbidden) return forbidden;
+                return handlers.create(resourceName)(ctx);
+            });
+            api.patch(`/${resourceName}/:id`, async (ctx) => {
+                const forbidden = await authorize(ctx, 'update');
+                if (forbidden) return forbidden;
+                return handlers.update(resourceName)(ctx);
+            });
+            api.delete(`/${resourceName}/:id`, async (ctx) => {
+                const forbidden = await authorize(ctx, 'delete');
+                if (forbidden) return forbidden;
+                return handlers.delete(resourceName)(ctx);
+            });
         }
         return api;
     });

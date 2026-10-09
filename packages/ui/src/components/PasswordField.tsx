@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input'
 interface PasswordFieldProps {
   field: AdminField
   fieldApi: any
+  disabled?: boolean
 }
 
-export function PasswordField({ field, fieldApi }: PasswordFieldProps) {
+export function PasswordField({ field, fieldApi, disabled }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
@@ -33,7 +34,7 @@ export function PasswordField({ field, fieldApi }: PasswordFieldProps) {
           value={fieldApi.state.value ?? ''}
           onBlur={fieldApi.handleBlur}
           onChange={(e) => fieldApi.handleChange(e.target.value)}
-          disabled={field.readOnly}
+          disabled={field.readOnly || disabled}
         />
         <button
           type="button"

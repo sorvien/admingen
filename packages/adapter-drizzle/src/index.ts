@@ -127,6 +127,7 @@ export function createDrizzleAdapter(options: {
         table: override.table ?? resource.table,
         fields: override.fields ?? resource.fields,
         primaryKey: override.primaryKey ?? resource.primaryKey,
+        permissions: override.permissions ?? resource.permissions,
         hooks: override.hooks ?? resource.hooks,
       };
     })
@@ -148,7 +149,8 @@ export function createDrizzleAdapter(options: {
       name: resourceSlug,
       label: resourceConfig.label || resourceSlug,
       fields: resourceConfig.fields,
-      primaryKey: resourceConfig.primaryKey
+      primaryKey: resourceConfig.primaryKey,
+      permissions: resourceConfig.permissions
     });
 
     // 2. Prepare Relationship Logic

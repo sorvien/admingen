@@ -4,6 +4,7 @@ import { Command, Menu, Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'sonner'
 import { useAuth } from '../hooks/useAuth'
+import { hasPermission } from '../hooks/usePermissions'
 import { CommandPalette } from '../components/CommandPalette'
 import { Logo } from '../components/Logo'
 import type { AdminSchema } from '@sorvien/admingen-types'
@@ -75,13 +76,16 @@ function RootComponent() {
   // If not on login page and no user (should rely on useEffect redirect, but safe guard)
   if (!user) return null
 
+  const accessibleResources = schema?.resources.filter((resource) => hasPermission(resource, 'list', user)) ?? []
+  const filteredSchema = schema ? { ...schema, resources: accessibleResources } : schema
+
   return (
     <>
       <Toaster richColors position="top-right" theme="dark" closeButton />
       <CommandPalette
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
-        schema={schema}
+        schema={filteredSchema}
         onLogout={logout}
       />
 
@@ -137,7 +141,7 @@ function RootComponent() {
 
           <nav className="flex flex-col gap-2">
             {schemaLoading && <div className="text-sm">Loading...</div>}
-            {schema?.resources.map((resource) => (
+            {accessibleResources.map((resource) => (
               <Link
                 key={resource.name}
                 to="/$resource"
@@ -154,7 +158,10 @@ function RootComponent() {
           
           <div className="mt-auto pt-4 border-t border-gray-800">
              <div className="px-3 py-2 text-sm text-gray-400 mb-2">
-                User: {user?.name || user?.email || 'Unknown'}
+                <div>User: {user?.name || user?.email || 'Unknown'}</div>
+                {user?.role && (
+                  <div className="text-xs text-cyan-400 font-mono mt-0.5">Role: {user.role}</div>
+                )}
              </div>
              <button
                 onClick={() => logout()}
