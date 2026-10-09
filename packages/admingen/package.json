@@ -41,12 +41,12 @@
   },
   "readme": "../../README.md",
   "peerDependencies": {
-    "elysia": "1.4.29"
+    "elysia": ">=1.0.0"
   },
   "devDependencies": {
     "bun-types": "latest",
     "typescript": "^7.0.2",
-    "elysia": "1.4.29",
+    "elysia": "^1.4.30",
     "drizzle-orm": "^0.45.3"
   },
   "publishConfig": {
