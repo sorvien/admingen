@@ -402,26 +402,6 @@ function EditFormComponent({
     },
   })
 
-  if (schemaLoading || itemLoading) return <div className="p-6">Loading...</div>
-  if (!resource) return <div className="p-6 text-red-500">Resource not found.</div>
-
-  if (!canRead) {
-    return (
-      <div className="max-w-2xl mx-auto py-10 px-6 text-white text-center">
-        <h2 className="text-xl font-bold text-red-400 mb-2">Access Denied</h2>
-        <p className="text-sm text-gray-300 mb-4">
-          You do not have permission to view {resource.label}.
-        </p>
-        <Link
-          to="/$resource"
-          params={{ resource: resourceName }}
-          className="inline-block px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-md transition-colors"
-        >
-          Back to {resource.label}
-        </Link>
-      </div>
-    )
-  }
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-6 text-white">
