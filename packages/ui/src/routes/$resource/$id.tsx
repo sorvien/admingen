@@ -378,7 +378,7 @@ function EditFormComponent({
             if (typeof relVal === 'object' && 'id' in relVal) {
               defaults[field.name] = relVal.id
             } else {
-              defaults[field.name] = relVal
+                 defaults[field.name] = itemData[field.name]
             }
           } else {
             defaults[field.name] = undefined
@@ -401,6 +401,7 @@ function EditFormComponent({
       mutate(value)
     },
   })
+
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-6 text-white">
