@@ -22,3 +22,8 @@ Thumbs.db
 sqlite.db
 *.sqlite
 ./example-app/drizzle/
+
+content_calendar.html
+content_calendar.md 
+social_media_history.html
+social_media_history.md
