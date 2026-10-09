@@ -2,6 +2,7 @@ import { describe, it, expect } from 'bun:test';
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 import { introspectSchema } from '../src/introspect';
+import { createDrizzleAdapter } from '../src/index';
 
 describe('AdminGen Schema Introspection', () => {
   it('should correctly introspect tables and map data types', () => {
@@ -45,5 +46,43 @@ describe('AdminGen Schema Introspection', () => {
     const teamField = userResource?.fields.find(f => f.name === 'teamId');
     expect(teamField?.type).toBe('relationship');
     expect(teamField?.relationTo).toBe('teams');
+  });
+
+  it('merges single field overrides without losing other introspected fields', () => {
+    const users = sqliteTable('users', {
+      id: integer('id').primaryKey({ autoIncrement: true }),
+      name: text('name').notNull(),
+      role: text('role').notNull(),
+    });
+
+    const result = createDrizzleAdapter({
+      schema: { users },
+      config: {
+        resources: [
+          {
+            slug: 'users',
+            fields: [
+              {
+                name: 'role',
+                type: 'select',
+                options: [
+                  { label: 'Admin', value: 'admin' },
+                  { label: 'Viewer', value: 'viewer' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const userRes = result.schemaJson.resources.find((r: any) => r.name === 'users');
+    expect(userRes).toBeDefined();
+    // All 3 fields must be present: id, name, and role!
+    expect(userRes.fields.map((f: any) => f.name)).toEqual(['id', 'name', 'role']);
+    // role must have the override settings
+    const roleField = userRes.fields.find((f: any) => f.name === 'role');
+    expect(roleField.type).toBe('select');
+    expect(roleField.options).toHaveLength(2);
   });
 });

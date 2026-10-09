@@ -74,7 +74,7 @@ function RelationshipField({
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
-        value={fieldApi.state.value ? String(fieldApi.state.value) : ''}
+        value={fieldApi.state.value !== undefined && fieldApi.state.value !== null && fieldApi.state.value !== '' ? String(fieldApi.state.value) : undefined}
         onValueChange={(value) => {
           const numValue = !isNaN(Number(value)) ? Number(value) : value
           fieldApi.handleChange(numValue)
@@ -117,7 +117,7 @@ function SelectField({
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
-        value={fieldApi.state.value ? String(fieldApi.state.value) : ''}
+        value={fieldApi.state.value !== undefined && fieldApi.state.value !== null && fieldApi.state.value !== '' ? String(fieldApi.state.value) : undefined}
         onValueChange={(value) => {
           fieldApi.handleChange(value)
         }}
@@ -245,10 +245,9 @@ function TextareaField({
 }
 
 // --- Main Component ---
+// --- Main Component ---
 function EditComponent() {
   const { resource: resourceName, id } = useParams({ from: '/$resource/$id' })
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
 
   const { data: schema, isLoading: schemaLoading } = useQuery({
     queryKey: ['adminSchema'],
@@ -268,6 +267,56 @@ function EditComponent() {
   )
 
   const { canRead, canUpdate } = usePermission(resource)
+
+  if (schemaLoading || itemLoading) return <div className="p-6">Loading...</div>
+  if (!resource) return <div className="p-6 text-red-500">Resource not found.</div>
+  if (!itemData) return <div className="p-6 text-red-500">Record not found.</div>
+
+  if (!canRead) {
+    return (
+      <div className="max-w-2xl mx-auto py-10 px-6 text-white text-center">
+        <h2 className="text-xl font-bold text-red-400 mb-2">Access Denied</h2>
+        <p className="text-sm text-gray-300 mb-4">
+          You do not have permission to view {resource.label}.
+        </p>
+        <Link
+          to="/$resource"
+          params={{ resource: resourceName }}
+          className="inline-block px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-md transition-colors"
+        >
+          Back to {resource.label}
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <EditFormComponent
+      key={`${resourceName}-${id}`}
+      resource={resource}
+      resourceName={resourceName}
+      id={id}
+      itemData={itemData}
+      canUpdate={canUpdate}
+    />
+  )
+}
+
+function EditFormComponent({
+  resource,
+  resourceName,
+  id,
+  itemData,
+  canUpdate,
+}: {
+  resource: NonNullable<AdminSchema['resources'][number]>
+  resourceName: string
+  id: string
+  itemData: any
+  canUpdate: boolean
+}) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const fields = React.useMemo(
     () => resource?.fields.filter((f) => !f.isId) ?? [],
@@ -317,27 +366,33 @@ function EditComponent() {
   // 4. Setup TanStack Form
   const form = useForm({
     defaultValues: React.useMemo(() => {
-      if (!itemData) return {}
       const defaults: Record<string, any> = {}
       fields.forEach((field: AdminField) => {
-        if (itemData[field.name] !== undefined) {
-            // Handle relationship objects by extracting ID if needed
-            if (field.type === 'relationship' && typeof itemData[field.name] === 'object' && itemData[field.name] !== null) {
-                 // Try to find the foreign key value if available, or ID from the object
-                 // Ideally the API returns the ID in the foreign key field, but let's be safe
-                 // If the API returns { author: { id: 1, name: '...' } }, we want 1.
-                 defaults[field.name] = itemData[field.name].id;
+        const directVal = itemData ? itemData[field.name] : undefined
+        if (field.type === 'relationship') {
+          const relVal = directVal !== undefined ? directVal : (
+            (field.foreignKey && itemData ? itemData[field.foreignKey] : undefined) ??
+            (field.relationName && itemData ? itemData[field.relationName] : undefined)
+          )
+          if (relVal !== undefined && relVal !== null) {
+            if (typeof relVal === 'object' && 'id' in relVal) {
+              defaults[field.name] = relVal.id
             } else {
                  defaults[field.name] = itemData[field.name]
             }
+          } else {
+            defaults[field.name] = undefined
+          }
+        } else if (directVal !== undefined && directVal !== null) {
+          defaults[field.name] = directVal
         } else {
-             if (field.type === 'relationship') {
-                defaults[field.name] = undefined
-              } else if (field.type === 'number') {
-                defaults[field.name] = 0
-              } else {
-                defaults[field.name] = ''
-              }
+          if (field.type === 'number') {
+            defaults[field.name] = 0
+          } else if (field.type === 'boolean') {
+            defaults[field.name] = false
+          } else {
+            defaults[field.name] = ''
+          }
         }
       })
       return defaults

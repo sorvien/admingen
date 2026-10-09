@@ -12,6 +12,7 @@ export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
+  role: text('role').notNull().default('viewer'),
   teamId: integer('team_id').references(() => teams.id), // FK to teams
 });
 

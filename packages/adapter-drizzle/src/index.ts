@@ -121,11 +121,26 @@ export function createDrizzleAdapter(options: {
       const override = resourceOverrides.get(resource.slug);
       if (!override) return resource;
 
+      const mergedFields = (() => {
+        if (!override.fields) return resource.fields;
+        const fieldOverrideMap = new Map(override.fields.map(f => [f.name, f]));
+        const updated = resource.fields.map(f => {
+          const fieldOverride = fieldOverrideMap.get(f.name);
+          return fieldOverride ? { ...f, ...fieldOverride } : f;
+        });
+        for (const f of override.fields) {
+          if (!resource.fields.some(existing => existing.name === f.name)) {
+            updated.push(f);
+          }
+        }
+        return updated;
+      })();
+
       return {
         ...resource,
         ...override,
         table: override.table ?? resource.table,
-        fields: override.fields ?? resource.fields,
+        fields: mergedFields,
         primaryKey: override.primaryKey ?? resource.primaryKey,
         permissions: override.permissions ?? resource.permissions,
         hooks: override.hooks ?? resource.hooks,

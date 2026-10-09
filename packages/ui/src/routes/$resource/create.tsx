@@ -65,7 +65,7 @@ function RelationshipField({
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
-        value={fieldApi.state.value ? String(fieldApi.state.value) : ''}
+        value={fieldApi.state.value !== undefined && fieldApi.state.value !== null && fieldApi.state.value !== '' ? String(fieldApi.state.value) : undefined}
         onValueChange={(value) => {
           const numValue = !isNaN(Number(value)) ? Number(value) : value
           fieldApi.handleChange(numValue)
@@ -106,7 +106,7 @@ function SelectField({
         {field.label} {field.required && <span className="text-red-500">*</span>}
       </Label>
       <Select
-        value={fieldApi.state.value ? String(fieldApi.state.value) : ''}
+        value={fieldApi.state.value !== undefined && fieldApi.state.value !== null && fieldApi.state.value !== '' ? String(fieldApi.state.value) : undefined}
         onValueChange={(value) => {
           fieldApi.handleChange(value)
         }}
