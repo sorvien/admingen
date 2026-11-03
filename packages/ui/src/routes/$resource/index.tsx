@@ -22,10 +22,10 @@ import {
   compareItems,
   rankItem
 } from '@tanstack/match-sorter-utils'
-import { Download, FilterX, FolderPlus, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Columns3, Download, FilterX, FolderPlus, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type {RankingInfo} from '@tanstack/match-sorter-utils';
-import type {Column, ColumnDef, ColumnFiltersState, FilterFn, PaginationState, RowData, RowSelectionState, SortingFn, SortingState} from '@tanstack/react-table';
+import type {Column, ColumnDef, ColumnFiltersState, FilterFn, PaginationState, RowData, RowSelectionState, SortingFn, SortingState, Table, VisibilityState} from '@tanstack/react-table';
 import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Button } from '@/components/ui/button'
 import {
@@ -132,7 +132,13 @@ function ResourceListComponent() {
     pageSize: 10,
   })
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [isDeleting, setIsDeleting] = React.useState(false)
+
+  // Column ids are resource-specific, so reset visibility when switching resources.
+  React.useEffect(() => {
+    setColumnVisibility({})
+  }, [resourceName])
 
   // Row selection is page-scoped. Reset it whenever the visible rows change so
   // IDs from a previous page can never be deleted by accident.
@@ -282,6 +288,7 @@ function ResourceListComponent() {
         ),
         enableSorting: false,
         enableColumnFilter: false,
+        enableHiding: false,
       }
 
       cols.unshift(selectColumn)
@@ -292,6 +299,7 @@ function ResourceListComponent() {
       const actionsColumn: ColumnDef<any> = {
         id: 'actions',
         header: 'Actions',
+        enableHiding: false,
         cell: ({ row }) => {
           const id = getRecordId(row.original, resource?.primaryKey);
           return (
@@ -372,11 +380,13 @@ function ResourceListComponent() {
       sorting,
       columnFilters,
       rowSelection,
+      columnVisibility,
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
     enableRowSelection: canDelete,
     getRowId: (row) => String(getRecordId(row, resource?.primaryKey)),
     manualPagination: true,
@@ -529,7 +539,7 @@ function ResourceListComponent() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {canCreate && (
                 <Link to="/$resource/create" params={{ resource: resourceName }}>
                   <Button className="cursor-pointer transition-transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -537,6 +547,8 @@ function ResourceListComponent() {
                   </Button>
                 </Link>
               )}
+
+              <ColumnVisibilityDropdown table={table} />
 
               <button
                 type="button"
@@ -655,7 +667,7 @@ function ResourceListComponent() {
                   {dataLoading ? (
                     <tr>
                       <td
-                        colSpan={columns.length}
+                        colSpan={table.getVisibleLeafColumns().length}
                         className="h-28 text-center text-gray-400"
                       >
                         Loading...
@@ -680,7 +692,7 @@ function ResourceListComponent() {
                   ) : (
                     <tr>
                       <td
-                        colSpan={columns.length}
+                        colSpan={table.getVisibleLeafColumns().length}
                         className="py-12 px-4 text-center text-gray-400"
                       >
                         {columnFilters.length > 0 ? (
@@ -833,6 +845,107 @@ function ResourceListComponent() {
 }
 // ...existing code...
 // --- Helper Components ---
+
+function ColumnVisibilityDropdown({ table }: { table: Table<any> }) {
+  const [open, setOpen] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open])
+
+  const hideableColumns = table
+    .getAllLeafColumns()
+    .filter((column) => column.getCanHide())
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-controls="column-visibility-menu"
+        title="Show or hide columns"
+        className="cursor-pointer px-3 py-2 bg-gray-800 text-sm text-gray-200 rounded-md hover:bg-gray-700/90 active:scale-95 transform transition focus:outline-none focus:ring-2 focus:ring-blue-400 inline-flex items-center gap-1.5"
+      >
+        <Columns3 className="w-4 h-4 text-gray-400" />
+        <span>Columns</span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
+            open ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div
+          id="column-visibility-menu"
+          role="group"
+          aria-label="Column visibility"
+          className="absolute right-0 z-20 mt-2 w-56 max-h-80 overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 p-1.5 shadow-xl"
+        >
+          <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Toggle columns
+          </div>
+          {hideableColumns.length === 0 ? (
+            <div className="px-2 py-1.5 text-sm text-gray-400">
+              No columns available
+            </div>
+          ) : (
+            hideableColumns.map((column) => {
+              const field = column.columnDef.meta?.field
+              const label = field?.label || field?.name || column.id
+              return (
+                <label
+                  key={column.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-200 hover:bg-gray-700/70"
+                >
+                  <input
+                    type="checkbox"
+                    checked={column.getIsVisible()}
+                    onChange={column.getToggleVisibilityHandler()}
+                    className="h-4 w-4 cursor-pointer accent-blue-500"
+                  />
+                  <span className="truncate">{label}</span>
+                </label>
+              )
+            })
+          )}
+          {hideableColumns.length > 0 && (
+            <button
+              type="button"
+              onClick={() => table.resetColumnVisibility()}
+              className="mt-1 w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-xs font-medium text-blue-300 hover:bg-gray-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={table.getIsAllColumnsVisible()}
+            >
+              Show all columns
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function Filter({ column }: { column: Column<any, unknown> }) {
   const columnFilterValue = column.getFilterValue()
