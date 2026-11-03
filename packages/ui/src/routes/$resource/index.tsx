@@ -22,10 +22,10 @@ import {
   compareItems,
   rankItem
 } from '@tanstack/match-sorter-utils'
-import { Download, FilterX, FolderPlus, Plus } from 'lucide-react'
+import { Download, FilterX, FolderPlus, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type {RankingInfo} from '@tanstack/match-sorter-utils';
-import type {Column, ColumnDef, ColumnFiltersState, FilterFn, PaginationState, RowData, SortingFn, SortingState} from '@tanstack/react-table';
+import type {Column, ColumnDef, ColumnFiltersState, FilterFn, PaginationState, RowData, RowSelectionState, SortingFn, SortingState} from '@tanstack/react-table';
 import type { AdminField, AdminSchema, PaginatedResponse } from '@sorvien/admingen-types'
 import { Button } from '@/components/ui/button'
 import {
@@ -46,6 +46,39 @@ declare module '@tanstack/react-table' {
 }
 
 const ALL_FILTER_VALUE = '__all__'
+
+function getRecordId(
+  record: Record<string, any>,
+  primaryKey: string | Array<string> | undefined,
+): string | number {
+  if (Array.isArray(primaryKey)) {
+    return primaryKey.map((key) => record[key]).join('_')
+  }
+  if (typeof primaryKey === 'string') {
+    return record[primaryKey]
+  }
+  return record.id
+}
+
+async function runConcurrent<T>(
+  items: Array<T>,
+  limit: number,
+  fn: (item: T) => Promise<void>,
+): Promise<void> {
+  const queue = [...items]
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (queue.length > 0) {
+        const item = queue.shift()
+        if (item !== undefined) {
+          await fn(item)
+        }
+      }
+    },
+  )
+  await Promise.all(workers)
+}
 
 // ... (keep fuzzyFilter and fuzzySort if needed for local fallback, but we'll use server-side)
 
@@ -98,6 +131,20 @@ function ResourceListComponent() {
     pageIndex: 0,
     pageSize: 10,
   })
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const [isDeleting, setIsDeleting] = React.useState(false)
+
+  // Row selection is page-scoped. Reset it whenever the visible rows change so
+  // IDs from a previous page can never be deleted by accident.
+  React.useEffect(() => {
+    setRowSelection({})
+  }, [
+    resourceName,
+    pagination.pageIndex,
+    pagination.pageSize,
+    sorting,
+    columnFilters,
+  ])
 
   const { data: schema, isLoading: schemaLoading } = useQuery({
     queryKey: ['adminSchema'],
@@ -121,7 +168,7 @@ function ResourceListComponent() {
   const columns = React.useMemo<Array<ColumnDef<any>>>(() => {
     if (!resource || !resource.fields) return []
     
-    const cols = resource.fields.map((field) => {
+    const cols: Array<ColumnDef<any>> = resource.fields.map((field) => {
       const baseColumn = {
         accessorKey: field.name,
         header: () => <span>{field.label}</span>,
@@ -203,21 +250,50 @@ function ResourceListComponent() {
       };
     })
 
+    if (canDelete) {
+      const selectColumn: ColumnDef<any> = {
+        id: 'select',
+        header: ({ table }) => (
+          <input
+            type="checkbox"
+            checked={table.getIsAllRowsSelected()}
+            disabled={table.getRowModel().rows.length === 0 || isDeleting}
+            ref={(el) => {
+              if (el) {
+                el.indeterminate =
+                  table.getIsSomeRowsSelected() &&
+                  !table.getIsAllRowsSelected();
+              }
+            }}
+            onChange={table.getToggleAllRowsSelectedHandler()}
+            className="h-4 w-4 cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Select all rows on this page"
+          />
+        ),
+        cell: ({ row }) => (
+          <input
+            type="checkbox"
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect() || isDeleting}
+            onChange={row.getToggleSelectedHandler()}
+            className="h-4 w-4 cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`Select row ${row.id}`}
+          />
+        ),
+        enableSorting: false,
+        enableColumnFilter: false,
+      }
+
+      cols.unshift(selectColumn)
+    }
+
     if (canUpdate || canDelete) {
       // Add Actions Column
       const actionsColumn: ColumnDef<any> = {
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => {
-          const id = (() => {
-            if (Array.isArray(resource?.primaryKey)) {
-              return resource.primaryKey.map((key) => row.original[key]).join('_');
-            }
-            if (typeof resource?.primaryKey === 'string') {
-              return row.original[resource.primaryKey];
-            }
-            return row.original.id;
-          })();
+          const id = getRecordId(row.original, resource?.primaryKey);
           return (
             <div className="flex items-center gap-2">
               {canUpdate && (
@@ -231,26 +307,37 @@ function ResourceListComponent() {
               )}
               {canDelete && (
                 <button
+                  disabled={isDeleting}
                   onClick={() => {
-                    toast(`Delete item #${id}?`, {
+                    if (isDeleting) return;
+                    const idStr = String(id);
+                    toast(`Delete item #${idStr}?`, {
                       description: 'This action cannot be undone.',
+                      duration: Infinity,
                       action: {
                         label: 'Delete',
                         onClick: async () => {
-                          const toastId = toast.loading(`Deleting #${id}...`);
+                          setIsDeleting(true);
+                          const toastId = toast.loading(`Deleting #${idStr}...`);
                           try {
-                            const res = await fetch(`/admin/api/${resourceName}/${id}`, {
-                              method: 'DELETE',
-                              credentials: 'include'
-                            });
+                            const res = await fetch(
+                              `/admin/api/${encodeURIComponent(resourceName)}/${encodeURIComponent(idStr)}`,
+                              {
+                                method: 'DELETE',
+                                credentials: 'include',
+                              },
+                            );
                             if (!res.ok) {
                               const errText = await res.text();
                               throw new Error(errText || 'Failed to delete');
                             }
                             await queryClient.invalidateQueries({ queryKey: ['resourceData', resourceName] });
-                            toast.success(`Record #${id} deleted successfully`, { id: toastId });
+                            toast.success(`Record #${idStr} deleted successfully`, { id: toastId });
                           } catch (e: any) {
+                            console.error(`Failed to delete record ${idStr}:`, e);
                             toast.error(e.message || 'Error deleting item', { id: toastId });
+                          } finally {
+                            setIsDeleting(false);
                           }
                         },
                       },
@@ -260,7 +347,7 @@ function ResourceListComponent() {
                       },
                     });
                   }}
-                  className="px-2 py-1 text-xs bg-red-600/20 text-red-400 border border-red-600/50 rounded hover:bg-red-600/30 transition-colors cursor-pointer"
+                  className="px-2 py-1 text-xs bg-red-600/20 text-red-400 border border-red-600/50 rounded hover:bg-red-600/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Delete
                 </button>
@@ -274,7 +361,7 @@ function ResourceListComponent() {
     }
 
     return cols;
-  }, [resource, resourceName, queryClient, canUpdate, canDelete])
+  }, [resource, resourceName, queryClient, canUpdate, canDelete, isDeleting])
 
   const table = useReactTable({
     data: paginatedData?.data ?? [],
@@ -284,16 +371,110 @@ function ResourceListComponent() {
       pagination,
       sorting,
       columnFilters,
+      rowSelection,
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onRowSelectionChange: setRowSelection,
+    enableRowSelection: canDelete,
+    getRowId: (row) => String(getRecordId(row, resource?.primaryKey)),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
     getCoreRowModel: getCoreRowModel(),
     debugTable: import.meta.env.DEV,
   })
+
+  const selectedRowCount = table.getSelectedRowModel().rows.length
+
+  const deleteSelectedRows = () => {
+    if (isDeleting) return
+    const selectedRows = table.getSelectedRowModel().rows
+    if (selectedRows.length === 0) return
+
+    const ids = selectedRows.map((row) =>
+      getRecordId(row.original, resource?.primaryKey),
+    )
+    const recordLabel = ids.length === 1 ? 'record' : 'records'
+
+    toast(`Delete ${ids.length} ${recordLabel}?`, {
+      description: 'This action cannot be undone.',
+      duration: Infinity,
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          setIsDeleting(true)
+          const toastId = toast.loading(
+            `Deleting ${ids.length} ${recordLabel}...`,
+          )
+          let failed = 0
+          const failedIds = new Set<string>()
+
+          try {
+            await runConcurrent(ids, 5, async (id) => {
+              const idStr = String(id)
+              try {
+                const res = await fetch(
+                  `/admin/api/${encodeURIComponent(resourceName)}/${encodeURIComponent(idStr)}`,
+                  {
+                    method: 'DELETE',
+                    credentials: 'include',
+                  },
+                )
+                if (!res.ok) {
+                  failed += 1
+                  failedIds.add(idStr)
+                  const errText = await res.text().catch(() => '')
+                  console.error(
+                    `Failed to delete record ${idStr}: HTTP ${res.status} ${errText}`,
+                  )
+                }
+              } catch (err) {
+                failed += 1
+                failedIds.add(idStr)
+                console.error(`Failed to delete record ${idStr}:`, err)
+              }
+            })
+
+            await queryClient.invalidateQueries({
+              queryKey: ['resourceData', resourceName],
+            })
+
+            if (failedIds.size > 0) {
+              const newSelection: RowSelectionState = {}
+              table.getRowModel().rows.forEach((row) => {
+                if (failedIds.has(row.id)) {
+                  newSelection[row.id] = true
+                }
+              })
+              setRowSelection(newSelection)
+            } else {
+              setRowSelection({})
+            }
+
+            if (failed > 0) {
+              const deleted = ids.length - failed
+              toast.error(
+                `Deleted ${deleted} of ${ids.length} ${recordLabel}. ${failed} failed.`,
+                { id: toastId },
+              )
+            } else {
+              toast.success(`${ids.length} ${recordLabel} deleted successfully`, {
+                id: toastId,
+              })
+            }
+          } finally {
+            setIsDeleting(false)
+          }
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    })
+  }
 
   if (schemaLoading) {
     return <div>Loading resource configuration...</div>
@@ -383,6 +564,42 @@ function ResourceListComponent() {
               </button>
             </div>
           </header>
+
+          {canDelete && selectedRowCount > 0 && (
+            <div
+              role="region"
+              aria-live="polite"
+              className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-3"
+            >
+              <div className="text-sm text-blue-100">
+                <span className="font-semibold">{selectedRowCount}</span>{' '}
+                {selectedRowCount === 1 ? 'record' : 'records'} selected
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isDeleting}
+                  onClick={() => setRowSelection({})}
+                  className="cursor-pointer text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Clear selection
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={isDeleting}
+                  onClick={deleteSelectedRows}
+                  className="cursor-pointer gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>{isDeleting ? 'Deleting...' : 'Delete Selected'}</span>
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="mb-4">
             {/* Global filter removed in favor of column filters or implement server-side global search if needed */}
